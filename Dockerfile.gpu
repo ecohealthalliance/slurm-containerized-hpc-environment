@@ -4,13 +4,6 @@ MAINTAINER "Noam Ross" ross@ecohealthalliance.org
 ENV CUDAToolkit_ROOT=/usr/local/cuda
 ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 
-# Install SLURM client
-RUN apt-get update && apt-get install -y slurm-client
-
-# Add SLURM configuration file
-ADD slurm.conf /etc/slurm-llnl/slurm.conf
-
-# All your previous installation scripts and configurations
 COPY scripts/install_xgboost.sh /reservoir_scripts/install_xgboost.sh
 RUN /reservoir_scripts/install_xgboost.sh
 

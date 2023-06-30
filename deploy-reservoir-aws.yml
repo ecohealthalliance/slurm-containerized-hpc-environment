@@ -1,0 +1,75 @@
+---
+- hosts: reservoir-aws
+
+  tasks:
+    - name: install system packages
+      become: yes
+      apt:
+        name:
+          - python3-pip
+          - python3-setuptools
+        state: present
+        update_cache: yes
+    - name: add docker gpg apt key
+      become: yes
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+    - name: add docker repo
+      become: yes
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu bionic stable
+        state: present
+    - name: update apt and install docker-ce
+      become: yes
+      apt: update_cache=yes name=docker-ce state=present
+    - name: install Docker module for Python
+      become: yes
+      pip:
+        name:
+          - docker
+          - docker-compose
+    - name: copy NVIDIA container toolkit script to instance
+      become: yes
+      copy:
+        src: scripts/install_container_toolkit.sh
+        dest: /install_container_toolkit.sh
+        owner: root
+        group: root
+        mode: '0755'
+    - name: make script dir
+      file:
+        path: /home/ubuntu/scripts
+        state: directory
+        mode: '0755'
+    - name: copy scripts dir
+      copy:
+        src: scripts/
+        dest: /home/ubuntu/scripts/
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+    - name: make config dir
+      file:
+        path: /home/ubuntu/config
+        state: directory
+        mode: '0755'
+    - name: copy config dir
+      copy:
+        src: config/
+        dest: /home/ubuntu/config/
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+    - name: copy Dockerfile over
+      copy:
+        src: Dockerfile.gpu
+        dest: /home/ubuntu
+        owner: ubuntu
+        group: ubuntu
+    - name: set up NVIDIA container toolkit
+      become: yes
+      command: /install_container_toolkit.sh
+    - name: reboot to finish nvidia driver install
+      become: yes
+      reboot:
