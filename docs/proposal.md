@@ -43,3 +43,35 @@ Phase 1: preparation
 Perform audit of the existing HPC infrastructure,including hardware and software and networking components 
 Identify potential challenges such as hardware limitations,software incompatibilities or other obstacles that could affect the SLURM  integration 
 
+
+The provided slurm.conf file contains the basic configuration for SLURM. However, there are a few adjustments and additions you may need to make based on your specific setup. Here's an overview of the configuration file:
+
+ControlMachine: Specifies the hostname of the control machine (controller node). Change it to match the hostname of your controller node.
+
+AuthType: Specifies the authentication type to be used. It is set to auth/munge, which is the recommended option for SLURM. No changes needed here unless you want to use a different authentication method.
+
+StateSaveLocation: Specifies the directory where SLURM should store its state information. It should be on a shared file system accessible to all nodes in your cluster.
+
+SlurmctldPidFile: Specifies the path to the PID file for the SLURM controller daemon.
+
+SlurmctldPort and SlurmdPort: Specify the port numbers for the SLURM controller daemon and the SLURM compute daemons (workers), respectively.
+
+ProctrackType: Specifies the process tracking method. It is set to proctrack/pgid, which is the recommended option for most setups.
+
+SuspendProgram and ResumeProgram: Specify the paths to the scripts that handle job suspension and resumption.
+
+SchedulerType: Specifies the scheduler type. It is set to sched/backfill, which is a common choice.
+
+SelectType: Specifies the job selection plugin type. It is set to select/linear, which is a basic selection plugin.
+
+MaxJobCount: Specifies the maximum number of simultaneous running jobs per user. Adjust it according to your requirements.
+
+SlurmctldLogFile and SlurmdLogFile: Specify the paths to the log files for the SLURM controller and compute daemons, respectively.
+
+JobAcctGatherFrequency and JobAcctGatherType: Specify the frequency and type of job accounting data collection.
+
+NodeName: Defines the nodes in your cluster along with their respective attributes (e.g., number of CPUs, state). Adjust this section to match your worker node configurations.
+
+PartitionName: Defines the partitions or queues available for job submission. The provided configuration defines a partition named "debug" with some basic settings. Adjust this section to match your desired partition configurations.
+
+Make sure to review and update the configuration based on your specific cluster setup, such as the network configuration, file system paths, and resource specifications.

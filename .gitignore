@@ -1,0 +1,4 @@
+# Ignore MariaDB data directory
+/mariadb/data *
+# Ignore Visual Studio Code files
+.vscode *
