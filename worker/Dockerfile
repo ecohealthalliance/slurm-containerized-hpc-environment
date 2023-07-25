@@ -13,7 +13,9 @@ RUN apt-get update && apt-get install -y \
     munge \
     libmunge-dev \
     libmunge2 \
-    supervisor
+    supervisor \
+    iputils-ping  \
+    netcat
 
 # Download and install SLURM
 RUN wget https://download.schedmd.com/slurm/slurm-23.02.3.tar.bz2
