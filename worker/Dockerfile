@@ -1,35 +1,46 @@
-# Use Ubuntu as the base image
-FROM ubuntu:latest
+FROM espirado/slurm.base:23.02
 
-# Install dependencies
+# avoid tzdata asking for geographic location
+ENV DEBIAN_FRONTEND=noninteractive
+
+# install necessary build tools and libraries
 RUN apt-get update && apt-get install -y \
-    wget \
-    gcc \
-    make \
-    python3 \
-    python3-pip \
-    vim \
-    git \
-    munge \
-    libmunge-dev \
-    libmunge2 \
-    supervisor \
-    iputils-ping  \
-    netcat
+  build-essential \
+  gfortran \
+  liblua5.3-dev \
+  lua-posix \
+  lua-filesystem \
+  wget \
+  bzip2 \
+  expect \
+  make \
+  gcc \
+  openmpi-bin \
+  openmpi-common \
+  libopenmpi-dev \
+  libgtk2.0-dev
 
-# Download and install SLURM
-RUN wget https://download.schedmd.com/slurm/slurm-23.02.3.tar.bz2
-RUN tar xjf slurm-23.02.3.tar.bz2
-WORKDIR slurm-23.02.3
-RUN ./configure
-RUN make
-RUN make install
+# install Lmod 8.7.29
+RUN wget https://sourceforge.net/projects/lmod/files/Lmod-8.7.29.tar.bz2 \
+  && tar -xjvf Lmod-8.7.29.tar.bz2 \
+  && cd Lmod-8.7.29 \
+  && ./configure --prefix=/opt/apps \
+  && make install \
+  && ln -s /opt/apps/lmod/lmod/init/profile /etc/profile.d/z00_lmod.sh \
+  && ln -s /opt/apps/lmod/lmod/init/cshrc /etc/profile.d/z00_lmod.csh \
+  && cd .. \
+  && rm -rf Lmod-8.7.29 Lmod-8.7.29.tar.bz2
 
-# Add SLURM configuration files (these will need to be created separately)
-ADD slurm.conf /etc/slurm-llnl/slurm.conf
+WORKDIR /home/worker
 
-# Add the supervisor configuration file (this will need to be created separately)
-ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# clean up
+RUN apt-get autoremove -y && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-# Set the default command for the container to be the supervisor
-CMD ["/usr/bin/supervisord"]
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+# tini for handling kernel signals
+RUN apt-get update && apt-get install -y tini \
+  && rm -rf /var/lib/apt/lists/*
+
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]

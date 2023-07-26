@@ -16,6 +16,12 @@ RUN /reservoir_scripts/install_r_pkgs_compiled.sh
 COPY scripts/install_r_pkgs_other.sh /reservoir_scripts/install_r_pkgs_other.sh
 RUN /reservoir_scripts/install_r_pkgs_other.sh
 
+COPY scripts/slurm-script.sh /reservoir_scripts/slurm-script.sh
+RUN /reservoir_scripts/slurm-script.sh
+
+
+ADD slurm.conf /etc/slurm-llnl/slurm.conf
+
 ENV TZ=America/New_York
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
   && echo $TZ > /etc/timezone \

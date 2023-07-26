@@ -2,3 +2,11 @@
 /mariadb/data *
 # Ignore Visual Studio Code files
 .vscode *
+.idea
+.DS_Store
+home
+secret
+modules
+modulefiles
+base/rpms
+
