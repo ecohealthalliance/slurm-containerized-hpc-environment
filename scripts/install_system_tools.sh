@@ -82,7 +82,7 @@ apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-he
   tree \
   whois \
   xclip \
-  zsh
+  zsh 
 
 apt-get clean
 rm -rf /var/lib/apt/lists/

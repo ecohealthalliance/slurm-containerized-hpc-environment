@@ -58,3 +58,12 @@ Use SLURM's built-in tools and any other preferred tools to monitor your cluster
                   3. Save all slurm logs on the host machine 
                   4. Mount /archive on slurm as a volume
                   5. Add reservoir with slurm configurations  
+# Create network for containers to connect 
+        # Create a new network
+  docker network create mynetwork
+
+# Connect the MariaDB container to the network
+    docker network connect mynetwork slurm-mariadb
+
+# Connect the Slurm container to the network
+    docker network connect mynetwork your_slurm_container

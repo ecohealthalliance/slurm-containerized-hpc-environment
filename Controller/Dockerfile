@@ -1,34 +1,50 @@
-# Use Ubuntu as the base image
-FROM ubuntu:latest
+FROM espirado/slurm.base:23.02
 
-# Install dependencies
+
+# Install necessary packages
 RUN apt-get update && apt-get install -y \
-    wget \
-    gcc \
-    make \
-    python3 \
-    python3-pip \
+ sudo \
+  wget \
+  file \
+  tree \
+  mariadb-server \
+  libmariadb-dev \
+  openssh-server \
+  openssh-client \
+  build-essential \
+  gcc \
+  make \
+  python3 \
+  python3-pip \
     vim \
     git \
     munge \
     libmunge-dev \
     libmunge2 \
-    supervisor
+    supervisor \
+    iputils-ping  \
+    netcat \
+    mariadb-client
 
-# Download and install SLURM
-RUN wget https://download.schedmd.com/slurm/slurm-23.02.3.tar.bz2
-RUN tar xjf slurm-23.02.3.tar.bz2
-WORKDIR slurm-23.02.3
-RUN ./configure
-RUN make
-RUN make install
+# Install OpenMPI
+RUN apt-get install -y openmpi-bin
 
-# Add SLURM configuration files (these will need to be created separately)
-ADD slurm.conf /etc/slurm-llnl/slurm.conf
-ADD slurmdbd.conf /etc/slurm-llnl/slurmdbd.conf
+# Install Lmod 7.7
+# Install Lmod
+RUN apt-get install -y lmod
 
-# Add the supervisor configuration file (this will need to be created separately)
-ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Set the default command for the container to be the supervisor
-CMD ["/usr/bin/supervisord"]
+ENV USE_SLURMDBD=true \
+  CLUSTER_NAME=snowflake \
+  CONTROL_MACHINE=controller \
+  SLURMCTLD_PORT=6817 \
+  SLURMD_PORT=6818 \
+  ACCOUNTING_STORAGE_HOST=database \
+  ACCOUNTING_STORAGE_PORT=6819 \
+  PARTITION_NAME=docker
+
+
+
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/tini", "--", "/docker-entrypoint.sh"]
