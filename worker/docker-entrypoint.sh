@@ -18,6 +18,7 @@ _munge_start_using_key() {
     sleep 1
   done
   echo ""
+  mkdir -p /var/run/munge
   cp /.secret/munge.key /etc/munge/munge.key
   chown -R munge: /etc/munge /var/lib/munge /var/log/munge /var/run/munge
   chmod 0700 /etc/munge

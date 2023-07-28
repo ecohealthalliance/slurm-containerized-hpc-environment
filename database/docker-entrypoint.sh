@@ -15,18 +15,22 @@ _sshd_host() {
 # slurm database user settings
 _slurm_acct_db() {
   {
-    echo "create database slurm_acct_db;"
-    echo "create user '${STORAGE_USER}'@'${STORAGE_HOST}';"
-    echo "set password for '${STORAGE_USER}'@'${STORAGE_HOST}' = password('${STORAGE_PASS}');"
-    echo "grant usage on *.* to '${STORAGE_USER}'@'${STORAGE_HOST}';"
-    echo "grant all privileges on slurm_acct_db.* to '${STORAGE_USER}'@'${STORAGE_HOST}';"
-    echo "flush privileges;"
+    echo "CREATE DATABASE IF NOT EXISTS slurm_acct_db;"
+    echo "CREATE USER IF NOT EXISTS '${STORAGE_USER}'@'localhost';"
+    echo "SET PASSWORD FOR '${STORAGE_USER}'@'localhost' = PASSWORD('${STORAGE_PASS}');"
+    echo "GRANT USAGE ON *.* TO '${STORAGE_USER}'@'localhost';"
+    echo "GRANT ALL PRIVILEGES ON slurm_acct_db.* TO '${STORAGE_USER}'@'localhost';"
+    echo "FLUSH PRIVILEGES;"
   } >> $SLURM_ACCT_DB_SQL
 }
 
 # start database
+# start database
 _mariadb_start() {
-  mysql_install_db
+  if [ ! -d "/var/lib/mysql/mysql" ]; then
+    mysql_install_db
+  fi
+  mkdir -p /var/run/mysqld
   chown -R mysql: /var/lib/mysql /var/log/mysql /var/run/mysqld
   cd /var/lib/mysql
   mysqld_safe --user=mysql &
@@ -35,6 +39,7 @@ _mariadb_start() {
   sleep 5s
   mysql -uroot < $SLURM_ACCT_DB_SQL
 }
+
 
 # start munge using existing key
 _munge_start_using_key() {
@@ -46,6 +51,7 @@ _munge_start_using_key() {
     done
     echo ""
   fi
+   mkdir -p /var/run/munge /etc/munge /var/log/munge /var/lib/munge
   cp /.secret/munge.key /etc/munge/munge.key
   chown -R munge: /etc/munge /var/lib/munge /var/log/munge /var/run/munge
   chmod 0700 /etc/munge
@@ -72,7 +78,8 @@ _wait_for_worker() {
 
 # generate slurmdbd.conf
 _generate_slurmdbd_conf() {
-  cat > /etc/slurm/slurmdbd.conf <<EOF
+  mkdir -p /etc/slurm
+  cat > /usr/local/etc/slurmdbd.conf<<EOF
 #
 # Example slurmdbd.conf file.
 #
@@ -91,9 +98,9 @@ AuthType=auth/munge
 AuthInfo=/var/run/munge/munge.socket.2
 #
 # slurmDBD info
-DbdAddr=$DBD_ADDR
-DbdHost=$DBD_HOST
-DbdPort=$DBD_PORT
+DbdAddr=database
+DbdHost=database
+DbdPort=6819
 SlurmUser=slurm
 #MessageTimeout=300
 DebugLevel=4
@@ -106,10 +113,10 @@ PidFile=/var/run/slurmdbd.pid
 #
 # Database info
 StorageType=accounting_storage/mysql
-StorageHost=$STORAGE_HOST
-StoragePort=$STORAGE_PORT
-StoragePass=$STORAGE_PASS
-StorageUser=$STORAGE_USER
+StorageHost=database.local.dev
+StoragePort=3306
+StoragePass=password
+StorageUser=slurm
 StorageLoc=slurm_acct_db
 EOF
 }
@@ -125,11 +132,15 @@ _slurmdbd() {
     _generate_slurmdbd_conf
   else
     echo "### use provided slurmdbd.conf ###"
-    cp /home/config/slurmdbd.conf /etc/slurm/slurmdbd.conf
+    cp /home/config/slurmdbd.conf  /usr/local/etc/slurmdbd.conf
   fi
-  /usr/sbin/slurmdbd
-  cp /etc/slurm/slurmdbd.conf /.secret/slurmdbd.conf
+  chmod 600 /usr/local/etc/slurmdbd.conf
+  chown slurm: /usr/local/etc/slurmdbd.conf
+
+  /usr/local/sbin/slurmdbd
+  cp /usr/local/etc/slurmdbd.conf /.secret/slurmdbd.conf
 }
+
 
 ### main ###
 _sshd_host

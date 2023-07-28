@@ -1,31 +1,20 @@
-#!/usr/bin/env bash
-set -e
+SLURM_VERSION = 23.02
+IMAGE = espirado/slurm.debs
 
-# install required packages
-apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-  wget \
-  build-essential \
-  rpm \
-  curl
+DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
-# build slurm debs
-wget https://download.schedmd.com/slurm/slurm-${SLURM_VERSION}.tar.bz2
-tar -xjf slurm-${SLURM_VERSION}.tar.bz2
-cd slurm-${SLURM_VERSION}
-./configure
-make
-make install
-cd ..
-cp /usr/local/bin/* /packages
+.PHONY: all build clean test
 
-# build openmpi deb
-wget https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.1.tar.gz
-tar -xzf openmpi-3.0.1.tar.gz
-cd openmpi-3.0.1
-./configure --with-slurm --with-pmi
-make
-make install
-cd ..
-cp /usr/local/bin/* /packages
+all: build
 
-exec "$@"
+build: debs
+
+debs:
+	docker build -t $(IMAGE):$(SLURM_VERSION) .
+	docker run --rm \
+			-e SLURM_VERSION=$(SLURM_VERSION) \
+			-v "$(DIR)/debs:/packages" $(IMAGE):$(SLURM_VERSION)
+
+clean:
+	@[ -z $(docker images -q $(IMAGE):$(SLURM_VERSION)) ] || docker rmi $(IMAGE):$(SLURM_VERSION)
+	rm -rf debs

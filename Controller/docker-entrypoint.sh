@@ -40,13 +40,32 @@ EOF2
 
 # start munge and generate key
 _munge_start() {
-  chown -R munge: /etc/munge /var/lib/munge /var/log/munge /var/run/munge
-  chmod 0700 /etc/munge
-  chmod 0711 /var/lib/munge
-  chmod 0700 /var/log/munge
-  chmod 0755 /var/run/munge
-  /usr/sbin/create-munge-key -f
+  # Create necessary directories if they do not exist
+  mkdir -p /var/run/munge /etc/munge /var/log/munge /var/lib/munge
+
+  
+# Restrict the permissions of the Munge directories
+  chown -R munge: /etc/munge/
+ chown -R munge: /var/log/munge/
+ chown -R munge: /var/lib/munge/
+ chown -R munge: /run/munge/
+ chmod 0700 /etc/munge/
+ chmod 0700 /var/log/munge/
+ chmod 0700 /var/lib/munge/
+ chmod 0700 /run/munge/
+ chmod a+x /run/munge
+
+
+  # Go to the Munge configuration directory
+  cd /etc/munge
+
+  # Create the Munge key
+   ls 
+
+  # Start the Munge daemon
   sudo -u munge /usr/sbin/munged
+
+  # Test Munge operation
   munge -n
   munge -n | unmunge
   remunge
@@ -63,7 +82,7 @@ _copy_secrets() {
 
 # generate slurm.conf
 _generate_slurm_conf() {
-  cat > /etc/slurm/slurm.conf <<EOF
+  cat > /usr/local/etc/slurm.conf <<EOF
 #
 # Example slurm.conf file. Please run configurator.html
 # (in doc/html) to build a configuration file customized
@@ -147,8 +166,8 @@ JobAcctGatherType=jobacct_gather/linux
 #JobAcctGatherFrequency=30
 #
 AccountingStorageType=accounting_storage/slurmdbd
-AccountingStorageHost=$ACCOUNTING_STORAGE_HOST
-AccountingStoragePort=$ACCOUNTING_STORAGE_PORT
+AccountingStorageHost=database.local.dev 
+AccountingStoragePort=6819
 #AccountingStorageLoc=
 #AccountingStoragePass=
 #AccountingStorageUser=
@@ -182,12 +201,12 @@ _slurmctld() {
     _generate_slurm_conf
   else
     echo "### use provided slurm.conf ###"
-    cp /home/config/slurm.conf /etc/slurm/slurm.conf
+    cp /home/config/slurm.conf /usr/local/etc/slurm.conf
   fi
   sacctmgr -i add cluster "${CLUSTER_NAME}"
   sleep 2s
   /usr/sbin/slurmctld
-  cp -f /etc/slurm/slurm.conf /.secret/
+  cp -f /usr/local/etc/slurm.conf /.secret/
 }
 
 ### main ###
