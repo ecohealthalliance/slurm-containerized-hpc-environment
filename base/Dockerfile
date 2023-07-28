@@ -59,4 +59,4 @@ VOLUME ["/home", "/.secret"]
 # 6817:         Slurm Ctl D
 # 6818:         Slurm D
 # 6819:         Slurm DBD
-EXPOSE 22 3306 6817 6818 6819
+EXPOSE 22 3306 6817 6818 6819 8787

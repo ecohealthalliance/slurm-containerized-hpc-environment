@@ -18,13 +18,13 @@ services:
     environment:
       USE_SLURMDBD: 'true'
       CLUSTER_NAME: snowflake
-      CONTROL_MACHINE: controller
       SLURMCTLD_PORT: 6817
       SLURMD_PORT: 6818
       ACCOUNTING_STORAGE_HOST: database
       ACCOUNTING_STORAGE_PORT: 6819
       COMPUTE_NODES: worker01 worker02
       PARTITION_NAME: docker
+      CONTROL_MACHINE: controller.local.dev
 
   database:
     build:
@@ -50,6 +50,7 @@ services:
       STORAGE_PORT: 3306
       STORAGE_PASS: password
       STORAGE_USER: slurm
+      CONTROL_MACHINE: controller.local.dev
 
   worker01:
     build:
@@ -68,7 +69,7 @@ services:
     networks:
       - slurm
     environment:
-      CONTROL_MACHINE: controller
+      CONTROL_MACHINE: controller.local.dev
       ACCOUNTING_STORAGE_HOST: database
       COMPUTE_NODES: worker01 worker02
 
@@ -89,7 +90,7 @@ services:
     networks:
       - slurm
     environment:
-      CONTROL_MACHINE: controller
+      CONTROL_MACHINE: controller.local.dev
       ACCOUNTING_STORAGE_HOST: database
       COMPUTE_NODES: worker01 worker02
 

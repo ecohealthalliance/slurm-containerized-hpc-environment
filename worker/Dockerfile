@@ -1,35 +1,43 @@
-FROM espirado/slurm.base:23.02
+FROM espirado/slurm-eco-base:23.02
 
 # avoid tzdata asking for geographic location
 ENV DEBIAN_FRONTEND=noninteractive
 
-# install necessary build tools and libraries
+# Install necessary packages
 RUN apt-get update && apt-get install -y \
-  build-essential \
-  gfortran \
-  liblua5.3-dev \
-  lua-posix \
-  lua-filesystem \
+ sudo \
   wget \
-  bzip2 \
-  expect \
-  make \
+  file \
+  tree \
+  mariadb-server \
+  libmariadb-dev \
+  openssh-server \
+  openssh-client \
+  build-essential \
   gcc \
-  openmpi-bin \
-  openmpi-common \
-  libopenmpi-dev \
-  libgtk2.0-dev
+  make \
+  python3 \
+  python3-pip \
+    vim \
+    git \
+    supervisor \
+    iputils-ping  \
+    netcat \
+    tini \
+    mariadb-client
 
-# install Lmod 8.7.29
-RUN wget https://sourceforge.net/projects/lmod/files/Lmod-8.7.29.tar.bz2 \
-  && tar -xjvf Lmod-8.7.29.tar.bz2 \
-  && cd Lmod-8.7.29 \
-  && ./configure --prefix=/opt/apps \
-  && make install \
-  && ln -s /opt/apps/lmod/lmod/init/profile /etc/profile.d/z00_lmod.sh \
-  && ln -s /opt/apps/lmod/lmod/init/cshrc /etc/profile.d/z00_lmod.csh \
-  && cd .. \
-  && rm -rf Lmod-8.7.29 Lmod-8.7.29.tar.bz2
+RUN apt  update
+RUN apt-get install munge libmunge2 libmunge-dev
+ 
+ 
+# Install OpenMPI
+RUN apt-get install -y openmpi-bin
+
+# Install Lmod 7.7
+# Install Lmod
+RUN apt-get install -y lmod
+
+
 
 WORKDIR /home/worker
 
@@ -38,6 +46,9 @@ RUN apt-get autoremove -y && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+
+# Modify permissions
+RUN chmod +x /docker-entrypoint.sh
 
 # tini for handling kernel signals
 RUN apt-get update && apt-get install -y tini \
