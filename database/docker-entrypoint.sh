@@ -12,11 +12,31 @@ _sshd_host() {
   /usr/sbin/sshd
 }
 
+
+
+
+# start database
+_mariadb_start() {
+  # mariadb somehow expects `resolveip` to be found under this path; see https://github.com/SciDAS/slurm-in-docker/issues/26
+  mysql_install_db
+  mkdir -p /var/log/mariadb /var/run/mariadb
+  chown -R mysql: /var/lib/mysql/ /var/log/mariadb/ /var/run/mariadb
+  cd /var/lib/mysql
+  mysqld_safe --user=mysql --bind-address=0.0.0.0
+  mysqld_safe --user=mysql &
+  cd /
+  _slurm_acct_db
+  sleep 5s
+  mysql -uroot < $SLURM_ACCT_DB_SQL
+}
+
+
+
 # slurm database user settings
 _slurm_acct_db() {
   {
     echo "CREATE DATABASE IF NOT EXISTS slurm_acct_db;"
-    echo "CREATE USER IF NOT EXISTS '${STORAGE_USER}'@'localhost';"
+    echo echo "CREATE USER IF NOT EXISTS '${STORAGE_USER}'@'%';"
     echo "SET PASSWORD FOR '${STORAGE_USER}'@'localhost' = PASSWORD('${STORAGE_PASS}');"
     echo "GRANT USAGE ON *.* TO '${STORAGE_USER}'@'localhost';"
     echo "GRANT ALL PRIVILEGES ON slurm_acct_db.* TO '${STORAGE_USER}'@'localhost';"
@@ -24,21 +44,6 @@ _slurm_acct_db() {
   } >> $SLURM_ACCT_DB_SQL
 }
 
-# start database
-# start database
-_mariadb_start() {
-  if [ ! -d "/var/lib/mysql/mysql" ]; then
-    mysql_install_db
-  fi
-  mkdir -p /var/run/mysqld
-  chown -R mysql: /var/lib/mysql /var/log/mysql /var/run/mysqld
-  cd /var/lib/mysql
-  mysqld_safe --user=mysql &
-  cd /
-  _slurm_acct_db
-  sleep 5s
-  mysql -uroot < $SLURM_ACCT_DB_SQL
-}
 
 
 # start munge using existing key
@@ -76,10 +81,13 @@ _wait_for_worker() {
   fi
 }
 
+
+
+
 # generate slurmdbd.conf
 _generate_slurmdbd_conf() {
-  mkdir -p /etc/slurm
-  cat > /usr/local/etc/slurmdbd.conf<<EOF
+mkdir -p /etc/slurm
+  cat > /etc/slurm/slurmdbd.conf<<EOF
 #
 # Example slurmdbd.conf file.
 #
@@ -121,6 +129,25 @@ StorageLoc=slurm_acct_db
 EOF
 }
 
+
+# run slurmd
+_slurmd() {
+  if [ ! -f /.secret/slurm.conf ]; then
+    echo -n "cheking for slurm.conf"
+    while [ ! -f /.secret/slurm.conf ]; do
+      echo -n "."
+      sleep 1
+    done
+    echo ""
+  fi
+  mkdir -p /var/spool/slurm/d
+  chown slurm: /var/spool/slurm/d
+  cp /.secret/slurm.conf /etc/slurm/slurm.conf
+  touch /var/log/slurmd.log
+  chown slurm: /var/log/slurmd.log
+  /usr/sbin/slurmd
+}
+
 # run slurmdbd
 _slurmdbd() {
   mkdir -p /var/spool/slurm/d \
@@ -147,6 +174,8 @@ _sshd_host
 _mariadb_start
 _munge_start_using_key
 _wait_for_worker
+_generate_slurm_conf
+_slurmd
 _slurmdbd
 
 tail -f /dev/null

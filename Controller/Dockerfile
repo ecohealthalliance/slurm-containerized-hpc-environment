@@ -22,6 +22,9 @@ RUN apt-get update && apt-get install -y \
     iputils-ping  \
     netcat \
     tini \
+     netcat \
+    telnet\
+    ufw \
     mariadb-client
 
 RUN apt  update
@@ -53,3 +56,5 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
+
+EXPOSE 6817 6818 6819 3306 

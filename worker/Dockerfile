@@ -24,6 +24,9 @@ RUN apt-get update && apt-get install -y \
     iputils-ping  \
     netcat \
     tini \
+     netcat \
+    telnet\
+    ufw \
     mariadb-client
 
 RUN apt  update
