@@ -98,9 +98,9 @@ AuthType=auth/munge
 AuthInfo=/var/run/munge/munge.socket.2
 #
 # slurmDBD info
-DbdAddr=database
-DbdHost=database
-DbdPort=6819
+DbdAddr=localhost
+DbdHost=localhost
+#DbdPort=3306
 SlurmUser=slurm
 #MessageTimeout=300
 DebugLevel=4
@@ -134,13 +134,13 @@ _slurmdbd() {
     _generate_slurmdbd_conf
   else
     echo "### use provided slurmdbd.conf ###"
-    cp /home/config/slurmdbd.conf  /usr/local/etc/slurmdbd.conf
+    cp /home/config/slurmdbd.conf  /etc/slurm/slurmdbd.conf
   fi
-  chmod 600 /usr/local/etc/slurmdbd.conf
-  chown slurm: /usr/local/etc/slurmdbd.conf
+  chmod 600 /etc/slurm/slurmdbd.conf
+  chown slurm: /etc/slurm/slurmdbd.conf
 
-  /usr/local/sbin/slurmdbd
-  cp /usr/local/etc/slurmdbd.conf /.secret/slurmdbd.conf
+  /usr/sbin/slurmdbd
+  cp /etc/slurm/slurmdbd.conf /.secret/slurmdbd.conf
 }
 
 

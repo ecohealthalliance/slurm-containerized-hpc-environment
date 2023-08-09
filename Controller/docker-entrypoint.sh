@@ -59,16 +59,24 @@ _munge_start() {
   # Go to the Munge configuration directory
   cd /etc/munge
 
-  # Create the Munge key
-   ls 
-
+ 
   # Start the Munge daemon
-  sudo -u munge /usr/sbin/munged
+  sudo -u munge /usr/sbin/munged 
+
 
   # Test Munge operation
   munge -n
   munge -n | unmunge
-  remunge
+
+  # Stop the Munge daemon if it's already running
+sudo killall munged
+
+# Wait a few seconds to make sure it has stopped
+sleep 2
+
+# Start the Munge daemon with 10 threads
+sudo -u munge /usr/sbin/munged --num-threads=10
+
 }
 
 # copy secrets to /.secret directory for other nodes
@@ -165,7 +173,7 @@ JobCompType=jobcomp/none
 JobAcctGatherType=jobacct_gather/linux
 #JobAcctGatherFrequency=30
 #
-StorageType=accounting_storage/mysql
+AccountingStorageType=accounting_storage/slurmdbd
 AccountingStorageHost=database.local.dev 
 AccountingStoragePort=3306
 #AccountingStorageLoc=

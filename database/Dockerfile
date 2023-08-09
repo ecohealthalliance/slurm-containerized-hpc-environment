@@ -24,7 +24,8 @@ RUN apt-get update && apt-get install -y \
     netcat \
     telnet\
     ufw \
-    tini 
+   slurmdbd\
+   tini 
 
 # Download and install SLURM
 # RUN wget https://download.schedmd.com/slurm/slurm-23.02.3.tar.bz2
