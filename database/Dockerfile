@@ -36,7 +36,7 @@ RUN apt-get update && apt-get install -y \
 
 ENV DBD_ADDR=database \
   DBD_HOST=database \
-  DBD_PORT=6819 \
+  DBD_PORT=3306 \
   STORAGE_HOST=database.local.dev \
   STORAGE_PORT=3306 \
   STORAGE_PASS=password \
@@ -47,14 +47,14 @@ ENV DBD_ADDR=database \
   SLURMCTLD_PORT=6817 \
   SLURMD_PORT=6818 \
   ACCOUNTING_STORAGE_HOST=database.local.dev\
-  ACCOUNTING_STORAGE_PORT=6819 \
+  ACCOUNTING_STORAGE_PORT=3306 \
   PARTITION_NAME=docker
 
 # clean up
 RUN apt-get autoremove -y && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN ls -l /usr/local/sbin/slurmdbd
+# RUN ls -l /usr/local/sbin/slurmdbd
 
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
@@ -64,4 +64,4 @@ RUN chmod +x /docker-entrypoint.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
-EXPOSE 6817 6818 6819 3306 
+EXPOSE 3306 

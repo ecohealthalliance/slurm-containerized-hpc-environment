@@ -75,14 +75,14 @@ _munge_start() {
 _copy_secrets() {
   cp /home/worker/worker-secret.tar.gz /.secret/worker-secret.tar.gz
   cp /home/worker/setup-worker-ssh.sh /.secret/setup-worker-ssh.sh
-  cp /etc/munge/munge.key /.secret/munge.key
+   cp /etc/munge/munge.key /.secret/munge.key
   rm -f /home/worker/worker-secret.tar.gz
   rm -f /home/worker/setup-worker-ssh.sh
 }
 
 # generate slurm.conf
 _generate_slurm_conf() {
-  cat > /usr/local/etc/slurm.conf <<EOF
+  cat > /etc/slurm/slurm.conf <<EOF
 #
 # Example slurm.conf file. Please run configurator.html
 # (in doc/html) to build a configuration file customized
@@ -165,18 +165,65 @@ JobCompType=jobcomp/none
 JobAcctGatherType=jobacct_gather/linux
 #JobAcctGatherFrequency=30
 #
-AccountingStorageType=accounting_storage/slurmdbd
+StorageType=accounting_storage/mysql
 AccountingStorageHost=database.local.dev 
-AccountingStoragePort=6819
+AccountingStoragePort=3306
 #AccountingStorageLoc=
 #AccountingStoragePass=
 #AccountingStorageUser=
-#
+AccountingStorageUser=$STORAGE_USER
+AccountingStoragePass=$STORAGE_PASS
+
 # COMPUTE NODES
 NodeName=worker[01-02] RealMemory=1800 CPUs=1 State=UNKNOWN
 PartitionName=$PARTITION_NAME Nodes=ALL Default=YES MaxTime=INFINITE State=UP
 EOF
 }
+
+_generate_slurmdbd_conf() {
+mkdir -p /etc/slurm
+  cat > /etc/slurm/slurmdbd.conf<<EOF
+#
+# Example slurmdbd.conf file.
+#
+# See the slurmdbd.conf man page for more information.
+#
+# Archive info
+#ArchiveJobs=yes
+#ArchiveDir="/tmp"
+#ArchiveSteps=yes
+#ArchiveScript=
+#JobPurge=12
+#StepPurge=1
+#
+# Authentication info
+AuthType=auth/munge
+AuthInfo=/var/run/munge/munge.socket.2
+#
+# slurmDBD info
+DbdAddr=database
+DbdHost=database
+DbdPort=6819
+SlurmUser=slurm
+#MessageTimeout=300
+DebugLevel=4
+#DefaultQOS=normal,standby
+LogFile=/var/log/slurm/slurmdbd.log
+PidFile=/var/run/slurmdbd.pid
+#PluginDir=/usr/lib/slurm
+#PrivateData=accounts,users,usage,jobs
+#TrackWCKey=yes
+#
+# Database info
+StorageType=accounting_storage/mysql
+StorageHost=database.local.dev
+StoragePort=3306
+StoragePass=password
+StorageUser=slurm
+StorageLoc=slurm_acct_db
+EOF
+}
+
 
 # run slurmctld
 _slurmctld() {

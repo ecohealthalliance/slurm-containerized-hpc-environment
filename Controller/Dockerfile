@@ -12,6 +12,8 @@ RUN apt-get update && apt-get install -y \
   openssh-server \
   openssh-client \
   build-essential \
+  slurmd \
+  slurmctld \
   gcc \
   make \
   python3 \
@@ -45,8 +47,10 @@ ENV USE_SLURMDBD=true \
   SLURMCTLD_PORT=6817 \
   SLURMD_PORT=6818 \
   ACCOUNTING_STORAGE_HOST=database.local.dev\
-  ACCOUNTING_STORAGE_PORT=6819 \
-  PARTITION_NAME=docker
+  ACCOUNTING_STORAGE_PORT=3306 \
+  PARTITION_NAME=docker \
+  STORAGE_PASS=password \
+  STORAGE_USER=slurm
 
 
 
