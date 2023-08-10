@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -e
 
+
+
 # start sshd server
 _sshd_host() {
   if [ ! -d /var/run/sshd ]; then
@@ -42,8 +44,6 @@ EOF2
 _munge_start() {
   # Create necessary directories if they do not exist
   mkdir -p /var/run/munge /etc/munge /var/log/munge /var/lib/munge
-
-  
 # Restrict the permissions of the Munge directories
   chown -R munge: /etc/munge/
  chown -R munge: /var/log/munge/
@@ -54,13 +54,10 @@ _munge_start() {
  chmod 0700 /var/lib/munge/
  chmod 0700 /run/munge/
  chmod a+x /run/munge
+ chown munge:munge /etc/munge/munge.key
+sudo chmod 400 /etc/munge/munge.key
 
-
-  # Go to the Munge configuration directory
-  cd /etc/munge
-
- 
-  # Start the Munge daemon
+ # Start the Munge daemon
   sudo -u munge /usr/sbin/munged 
 
 
@@ -68,15 +65,13 @@ _munge_start() {
   munge -n
   munge -n | unmunge
 
-  # Stop the Munge daemon if it's already running
-sudo killall munged
 
-# Wait a few seconds to make sure it has stopped
-sleep 2
+ # Test Munge operation
+  munge -n
+  munge -n | unmunge
 
-# Start the Munge daemon with 10 threads
-sudo -u munge /usr/sbin/munged --num-threads=10
 
+ service munge start 
 }
 
 # copy secrets to /.secret directory for other nodes
@@ -87,6 +82,19 @@ _copy_secrets() {
   rm -f /home/worker/worker-secret.tar.gz
   rm -f /home/worker/setup-worker-ssh.sh
 }
+
+
+# Wait for database to be ready
+_wait_for_database() {
+  echo -n "Waiting for database to be ready"
+  until mysql -h database.local.dev -u $STORAGE_USER -p$STORAGE_PASS -e 'SELECT 1' > /dev/null 2>&1; do
+    echo -n "."
+    sleep 1
+  done
+  echo ""
+}
+
+
 
 # generate slurm.conf
 _generate_slurm_conf() {
@@ -176,59 +184,13 @@ JobAcctGatherType=jobacct_gather/linux
 AccountingStorageType=accounting_storage/slurmdbd
 AccountingStorageHost=database.local.dev 
 AccountingStoragePort=3306
-#AccountingStorageLoc=
-#AccountingStoragePass=
-#AccountingStorageUser=
+#AccountingStorageLoc=slurm_acct_db
 AccountingStorageUser=$STORAGE_USER
 AccountingStoragePass=$STORAGE_PASS
 
 # COMPUTE NODES
 NodeName=worker[01-02] RealMemory=1800 CPUs=1 State=UNKNOWN
 PartitionName=$PARTITION_NAME Nodes=ALL Default=YES MaxTime=INFINITE State=UP
-EOF
-}
-
-_generate_slurmdbd_conf() {
-mkdir -p /etc/slurm
-  cat > /etc/slurm/slurmdbd.conf<<EOF
-#
-# Example slurmdbd.conf file.
-#
-# See the slurmdbd.conf man page for more information.
-#
-# Archive info
-#ArchiveJobs=yes
-#ArchiveDir="/tmp"
-#ArchiveSteps=yes
-#ArchiveScript=
-#JobPurge=12
-#StepPurge=1
-#
-# Authentication info
-AuthType=auth/munge
-AuthInfo=/var/run/munge/munge.socket.2
-#
-# slurmDBD info
-DbdAddr=database
-DbdHost=database
-DbdPort=6819
-SlurmUser=slurm
-#MessageTimeout=300
-DebugLevel=4
-#DefaultQOS=normal,standby
-LogFile=/var/log/slurm/slurmdbd.log
-PidFile=/var/run/slurmdbd.pid
-#PluginDir=/usr/lib/slurm
-#PrivateData=accounts,users,usage,jobs
-#TrackWCKey=yes
-#
-# Database info
-StorageType=accounting_storage/mysql
-StorageHost=database.local.dev
-StoragePort=3306
-StoragePass=password
-StorageUser=slurm
-StorageLoc=slurm_acct_db
 EOF
 }
 
@@ -256,12 +218,40 @@ _slurmctld() {
     _generate_slurm_conf
   else
     echo "### use provided slurm.conf ###"
-    cp /home/config/slurm.conf /usr/local/etc/slurm.conf
+    cp /home/config/slurm.conf /etc/slurm/slurm.conf 
   fi
   sacctmgr -i add cluster "${CLUSTER_NAME}"
   sleep 2s
-  /usr/sbin/slurmctld
-  cp -f /usr/local/etc/slurm.conf /.secret/
+    service slurmctld start
+  cp -f /etc/slurm/slurm.conf /.secret/
+  slurmctld -D
+
+}
+
+# Function to check if slurmctld is running
+_check_slurmctld() {
+  for i in {1..10}; do # 10 attempts to see if slurmctld is up
+    if service slurmctld status | grep -q "is running"; then
+      echo "slurmctld is up and running!"
+      return 0
+    fi
+    echo "Waiting for slurmctld to be up..."
+    sleep 5
+  done
+  echo "slurmctld is not running! Exiting..."
+  exit 1
+}
+
+# Function to print logs
+_print_logs() {
+  echo "### Printing logs for slurm ###"
+  cat /var/log/slurm/slurm.log
+  echo "### Printing logs for slurmctld ###"
+  cat /var/log/slurm/slurmctld.log
+  echo "### Printing logs for munge ###"
+  cat /var/log/munge/munged.log
+  echo "### Printing logs for slurmdbd ###"
+  cat /var/log/slurm/slurmdbd.log
 }
 
 ### main ###
@@ -269,6 +259,10 @@ _sshd_host
 _ssh_worker
 _munge_start
 _copy_secrets
+_wait_for_database
 _slurmctld
+_check_slurmctld
+_print_logs
 
 tail -f /dev/null
+cat /etc/slurm/slurm.conf

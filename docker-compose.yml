@@ -42,15 +42,12 @@ services:
     hostname: database.local.dev
     networks:
       - slurm
-    environment:
-      DBD_ADDR: database
-      DBD_HOST: database
-      DBD_PORT: 3306
-      STORAGE_HOST: database.local.dev
-      STORAGE_PORT: 3306
-      STORAGE_PASS: password
-      STORAGE_USER: slurm
-      CONTROL_MACHINE: controller.local.dev
+    
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=password || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   worker01:
     build:

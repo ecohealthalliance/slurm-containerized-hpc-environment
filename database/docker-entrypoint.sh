@@ -32,8 +32,7 @@ _slurm_acct_db() {
   echo "GRANT USAGE ON *.* TO '${STORAGE_USER}'@'%';" >> $SLURM_ACCT_DB_SQL
   echo "GRANT ALL PRIVILEGES ON slurm_acct_db.* TO '${STORAGE_USER}'@'%';" >> $SLURM_ACCT_DB_SQL
   echo "FLUSH PRIVILEGES;" >> $SLURM_ACCT_DB_SQL
-  echo "SQL file created and ready."
-}
+} 
 
 
 
@@ -98,8 +97,8 @@ AuthType=auth/munge
 AuthInfo=/var/run/munge/munge.socket.2
 #
 # slurmDBD info
-DbdAddr=localhost
-DbdHost=localhost
+DbdAddr=database.local.dev
+DbdHost=database.local.dev
 #DbdPort=3306
 SlurmUser=slurm
 #MessageTimeout=300
@@ -115,7 +114,7 @@ PidFile=/var/run/slurmdbd.pid
 StorageType=accounting_storage/mysql
 StorageHost=database.local.dev
 StoragePort=3306
-StoragePass=password
+StoragePass=/var/run/munge/munge.socket.2 
 StorageUser=slurm
 StorageLoc=slurm_acct_db
 EOF
