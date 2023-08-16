@@ -78,21 +78,10 @@ sudo chmod 400 /etc/munge/munge.key
 _copy_secrets() {
   cp /home/worker/worker-secret.tar.gz /.secret/worker-secret.tar.gz
   cp /home/worker/setup-worker-ssh.sh /.secret/setup-worker-ssh.sh
-   cp /etc/munge/munge.key /.secret/munge.key
   rm -f /home/worker/worker-secret.tar.gz
   rm -f /home/worker/setup-worker-ssh.sh
 }
 
-
-# Wait for database to be ready
-_wait_for_database() {
-  echo -n "Waiting for database to be ready"
-  until mysql -h database.local.dev -u $STORAGE_USER -p$STORAGE_PASS -e 'SELECT 1' > /dev/null 2>&1; do
-    echo -n "."
-    sleep 1
-  done
-  echo ""
-}
 
 
 
@@ -182,11 +171,11 @@ JobAcctGatherType=jobacct_gather/linux
 #JobAcctGatherFrequency=30
 #
 AccountingStorageType=accounting_storage/slurmdbd
-AccountingStorageHost=database.local.dev 
-AccountingStoragePort=3306
+AccountingStorageHost=$ACCOUNTING_STORAGE_HOST
+AccountingStoragePort=$ACCOUNTING_STORAGE_PORT
 #AccountingStorageLoc=slurm_acct_db
-AccountingStorageUser=$STORAGE_USER
-AccountingStoragePass=$STORAGE_PASS
+#AccountingStorageUser=$STORAGE_USER
+#AccountingStoragePass=$STORAGE_PASS
 
 # COMPUTE NODES
 NodeName=worker[01-02] RealMemory=1800 CPUs=1 State=UNKNOWN
@@ -194,8 +183,6 @@ PartitionName=$PARTITION_NAME Nodes=ALL Default=YES MaxTime=INFINITE State=UP
 EOF
 }
 
-
-# run slurmctld
 _slurmctld() {
   if $USE_SLURMDBD; then
     echo -n "cheking for slurmdbd.conf"
@@ -205,6 +192,7 @@ _slurmctld() {
     done
     echo ""
   fi
+
   mkdir -p /var/spool/slurm/ctld \
     /var/spool/slurm/d \
     /var/log/slurm
@@ -213,46 +201,33 @@ _slurmctld() {
     /var/log/slurm
   touch /var/log/slurmctld.log
   chown slurm: /var/log/slurmctld.log
+  chown slurm: /etc/slurm/slurm.conf
+  chmod 600 /etc/slurm/slurm.conf
+
+
   if [[ ! -f /home/config/slurm.conf ]]; then
     echo "### generate slurm.conf ###"
     _generate_slurm_conf
   else
     echo "### use provided slurm.conf ###"
-    cp /home/config/slurm.conf /etc/slurm/slurm.conf 
+    cp /home/config/slurm.conf /etc/slurm/slurm.conf || {
+      echo "Failed to copy slurm.conf to /etc/slurm/"
+      exit 1
+    }
   fi
-  sacctmgr -i add cluster "${CLUSTER_NAME}"
-  sleep 2s
-    service slurmctld start
-  cp -f /etc/slurm/slurm.conf /.secret/
-  slurmctld -D
 
+  if [ -f /etc/slurm/slurm.conf ]; then
+    sacctmgr -i add cluster "${CLUSTER_NAME}"
+    sleep 2s
+    service slurmctld start  # Start slurmctld service
+    cp -f /etc/slurm/slurm.conf /.secret/
+  else
+    echo "Error: /etc/slurm/slurm.conf not found!"
+    exit 1
+  fi
 }
 
-# Function to check if slurmctld is running
-_check_slurmctld() {
-  for i in {1..10}; do # 10 attempts to see if slurmctld is up
-    if service slurmctld status | grep -q "is running"; then
-      echo "slurmctld is up and running!"
-      return 0
-    fi
-    echo "Waiting for slurmctld to be up..."
-    sleep 5
-  done
-  echo "slurmctld is not running! Exiting..."
-  exit 1
-}
 
-# Function to print logs
-_print_logs() {
-  echo "### Printing logs for slurm ###"
-  cat /var/log/slurm/slurm.log
-  echo "### Printing logs for slurmctld ###"
-  cat /var/log/slurm/slurmctld.log
-  echo "### Printing logs for munge ###"
-  cat /var/log/munge/munged.log
-  echo "### Printing logs for slurmdbd ###"
-  cat /var/log/slurm/slurmdbd.log
-}
 
 ### main ###
 _sshd_host
@@ -260,9 +235,11 @@ _ssh_worker
 _munge_start
 _copy_secrets
 _wait_for_database
+_generate_slurm_conf
 _slurmctld
 _check_slurmctld
-_print_logs
 
 tail -f /dev/null
-cat /etc/slurm/slurm.conf
+
+
+EXPOSE 6817 6818 6819 3306 8787 

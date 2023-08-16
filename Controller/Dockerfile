@@ -12,8 +12,6 @@ RUN apt-get update && apt-get install -y \
   openssh-server \
   openssh-client \
   build-essential \
-  slurmd \
-  slurmctld \
   gcc \
   make \
   python3 \
@@ -41,13 +39,16 @@ RUN apt-get install -y openmpi-bin
 # Install Lmod
 RUN apt-get install -y lmod
 
+# Install Slurm
+RUN apt-get install -y slurm-wlm slurm-wlm-basic-plugins slurm-wlm-torque
+
 
 ENV USE_SLURMDBD=true \
   CLUSTER_NAME=snowflake \
-  CONTROL_MACHINE= \
+  CONTROL_MACHINE=controller \
   SLURMCTLD_PORT=6817 \
-  SLURMD_PORT=6818\
-  ACCOUNTING_STORAGE_HOST=database \
+  SLURMD_PORT=6818 \
+  ACCOUNTING_STORAGE_HOST=database.local.dev \
   ACCOUNTING_STORAGE_PORT=3306 \
   STORAGE_PASS=/var/run/munge/munge.socket.2 \
   STORAGE_USER=slurm \

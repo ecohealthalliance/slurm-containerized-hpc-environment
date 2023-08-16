@@ -65,4 +65,4 @@ RUN chmod +x /docker-entrypoint.sh
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
 
-EXPOSE 3306 
+EXPOSE 3306  6817 6818 6819 8787 

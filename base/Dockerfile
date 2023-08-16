@@ -33,11 +33,13 @@ RUN apt-get update && apt-get install -y \
     munge \
     libmunge-dev \
     libmunge2 \
+    telnet\
+    ufw \
+    netcat \
+    tini \
     supervisor \
     iputils-ping  \
     netcat \
-    slurmd \
-  slurmctld \
     mariadb-client
 
 
@@ -46,13 +48,13 @@ RUN apt-get install -y locales && \
     locale-gen en_US.UTF-8
 
 # Download and install SLURM
-# RUN wget https://download.schedmd.com/slurm/slurm-23.02.3.tar.bz2
-# RUN tar xjf slurm-23.02.3.tar.bz2
-# WORKDIR slurm-23.02.3
-# RUN ./configure
-# RUN make
-# RUN make install
-# WORKDIR /
+ RUN wget https://download.schedmd.com/slurm/slurm-23.02.3.tar.bz2
+ RUN tar xjf slurm-23.02.3.tar.bz2
+ WORKDIR slurm-23.02.3
+ RUN ./configure
+ RUN make
+ RUN make install
+ WORKDIR /
 
 VOLUME ["/home", "/.secret"]
 

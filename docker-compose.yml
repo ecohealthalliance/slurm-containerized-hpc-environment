@@ -19,7 +19,7 @@ services:
       USE_SLURMDBD: 'true'
       CLUSTER_NAME: snowflake
       SLURMCTLD_PORT: 6817
-      SLURMD_PORT: 3306
+      SLURMD_PORT: 6818
       ACCOUNTING_STORAGE_HOST: database
       ACCOUNTING_STORAGE_PORT: 3306
       COMPUTE_NODES: worker01 worker02
