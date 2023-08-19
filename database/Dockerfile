@@ -2,29 +2,25 @@ FROM espirado/slurm-eco-base:23.02
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
- sudo \
-  wget \
-  file \
-  tree \
-  mariadb-server \
-  libmariadb-dev \
-  openssh-server \
-  openssh-client \
-  build-essential \
-  gcc \
-  make \
-  python3 \
-  python3-pip \
-  slurmd \
-  slurmctld \
-    vim \
-    git \
-    supervisor \
-    iputils-ping  \
-    netcat \
-    telnet\
-    ufw \
-   slurmdbd\
+ git \
+gcc \
+make  \
+ ruby \
+ruby-dev \
+ libpam0g-dev \
+libmariadb-client-lgpl-dev   \
+libmysqlclient-dev  \
+mariadb-server  \
+build-essential  \
+libssl-dev  \
+tini 
+
+        
+RUN gem install fpm
+
+
+
+ 
    tini 
 
 # Download and install SLURM

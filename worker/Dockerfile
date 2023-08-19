@@ -3,33 +3,6 @@ FROM espirado/slurm-eco-base:23.02
 # avoid tzdata asking for geographic location
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install necessary packages
-RUN apt-get update && apt-get install -y \
- sudo \
-  wget \
-  file \
-  tree \
-  mariadb-server \
-  libmariadb-dev \
-  openssh-server \
-  openssh-client \
-  build-essential \
-  slurmd \
-  slurmctld \
-  gcc \
-  make \
-  python3 \
-  python3-pip \
-    vim \
-    git \
-    supervisor \
-    iputils-ping  \
-    netcat \
-    tini \
-     netcat \
-    telnet\
-    ufw \
-    mariadb-client
 
 RUN apt  update
 RUN apt-get install munge libmunge2 libmunge-dev
