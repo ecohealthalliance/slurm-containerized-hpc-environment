@@ -1,4 +1,4 @@
-FROM espirado/slurm-eco-base:23.02
+FROM espirado/eco-slurm-base:23.02 
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
@@ -23,42 +23,39 @@ RUN gem install fpm
  
    tini 
 
-# Download and install SLURM
-# RUN wget https://download.schedmd.com/slurm/slurm-23.02.3.tar.bz2
-# RUN tar xjf slurm-23.02.3.tar.bz2
-# WORKDIR slurm-23.02.3
-# RUN ./configure
-# RUN make
-# RUN make install
 
-ENV DBD_ADDR=database \
-  DBD_HOST=database \
-  DBD_PORT=3306 \
-  STORAGE_HOST=database.local.dev \
-  STORAGE_PORT=3306 \
-  STORAGE_PASS=/var/run/munge/munge.socket.2 \
-  STORAGE_USER=slurm \
-  USE_SLURMDBD=true \
-  CLUSTER_NAME=database \
+
+# Install OpenMPI
+RUN apt-get install -y openmpi-bin
+
+# Install Lmod 7.7
+# Install Lmod
+RUN apt-get install -y lmod
+RUN apt-get update && apt-get install -y supervisor && rm -rf /var/lib/apt/lists/*
+
+
+
+ENV USE_SLURMDBD=true \
+  CLUSTER_NAME=snowflake \
   CONTROL_MACHINE=controller \
   SLURMCTLD_PORT=6817 \
-  SLURMD_PORT=6818 \
-  ACCOUNTING_STORAGE_HOST=database.local.dev\
+  SLURMD_PORT=6819 \
+  ACCOUNTING_STORAGE_HOST=database \
   ACCOUNTING_STORAGE_PORT=3306 \
+  STORAGE_PASS=/var/run/munge/munge.socket.2 \
+  STORAGE_USER=slurm \
   PARTITION_NAME=docker
 
-# clean up
-RUN apt-get autoremove -y && apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# RUN ls -l /usr/local/sbin/slurmdbd
-
-
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY slurm.conf /etc/slurm/slurm.conf
+COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
+
+
+
 
 # Modify permissions
 RUN chmod +x /docker-entrypoint.sh
 
-ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…"]
 
-EXPOSE 3306  6817 6818 6819 8787 
+EXPOSE 6817 6818 6819 3306 8787 
