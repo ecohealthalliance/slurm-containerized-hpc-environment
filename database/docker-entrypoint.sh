@@ -124,10 +124,23 @@ EOF
 
 # run slurmdbd
 _slurmdbd() {
-  mkdir -p /var/spool/slurm/d \
+  mkdir -p /var/spool/slurm/ctld \
+    /var/spool/slurm/d \
     /var/log/slurm
-  chown slurm: /var/spool/slurm/d \
+  chown -R slurm: /var/spool/slurm/ctld \
+    /var/spool/slurm/d \
     /var/log/slurm
+  touch /var/log/slurmctld.log
+  chown slurm: /var/log/slurmctld.log
+
+  touch /var/log/slurm/slurmdbd.log
+   chown slurm: /var/log/slurm/slurmdbd.log
+   chown slurm: /etc/slurm/slurm.conf
+   chown slurm: /etc/slurm/slurmdbd.conf
+   chown slurm:  /etc/slurm/slurmdbd.conf
+  chmod 600 /etc/slurm/slurmdbd.conf
+  chmod 600 /etc/slurm/slurm.conf
+
   if [[ ! -f /home/config/slurmdbd.conf ]]; then
     echo "### generate slurmdbd.conf ###"
     _generate_slurmdbd_conf
@@ -138,7 +151,9 @@ _slurmdbd() {
   chmod 600 /etc/slurm/slurmdbd.conf
   chown slurm: /etc/slurm/slurmdbd.conf
 
+  # Start slurmbd service
   /usr/sbin/slurmdbd
+  
   cp /etc/slurm/slurmdbd.conf /.secret/slurmdbd.conf
 }
 

@@ -65,25 +65,23 @@ sudo chmod 400 /etc/munge/munge.key
   munge -n
   munge -n | unmunge
 
-
- # Test Munge operation
-  munge -n
-  munge -n | unmunge
-
-
- service munge start 
 }
 
 # copy secrets to /.secret directory for other nodes
 _copy_secrets() {
   cp /home/worker/worker-secret.tar.gz /.secret/worker-secret.tar.gz
   cp /home/worker/setup-worker-ssh.sh /.secret/setup-worker-ssh.sh
+  cp /etc/munge/munge.key /.secret/munge.key
   rm -f /home/worker/worker-secret.tar.gz
   rm -f /home/worker/setup-worker-ssh.sh
 }
 
 
 
+
+_start_Rstudio() {
+  service rstudio-server start
+}
 
 # generate slurm.conf
 _generate_slurm_conf() {
@@ -193,16 +191,30 @@ _slurmctld() {
     echo ""
   fi
 
-  mkdir -p /var/spool/slurm/ctld \
-    /var/spool/slurm/d \
+mkdir -p /var/spool/slurm/ctld \
+     /var/spool/slurm/d \
     /var/log/slurm
   chown -R slurm: /var/spool/slurm/ctld \
     /var/spool/slurm/d \
     /var/log/slurm
   touch /var/log/slurmctld.log
   chown slurm: /var/log/slurmctld.log
-  chown slurm: /etc/slurm/slurm.conf
+
+  touch /var/log/slurm/slurmdbd.log
+   chown slurm: /var/log/slurm/slurmdbd.log
+   chown slurm: /etc/slurm/slurm.conf
+   chown slurm: /etc/slurm/slurmdbd.conf
+   chown slurm:  /etc/slurm/slurmdbd.conf
+  chmod 600 /etc/slurm/slurmdbd.conf
   chmod 600 /etc/slurm/slurm.conf
+
+
+
+  # Check for the configuration files in /etc/slurm/
+  if [[ ! -f /etc/slurm/slurm.conf ]]; then
+    echo "Error: /etc/slurm/slurm.conf not found!"
+    exit 1
+  fi
 
 
   if [[ ! -f /home/config/slurm.conf ]]; then
@@ -219,7 +231,7 @@ _slurmctld() {
   if [ -f /etc/slurm/slurm.conf ]; then
     sacctmgr -i add cluster "${CLUSTER_NAME}"
     sleep 2s
-    service slurmctld start  # Start slurmctld service
+      /usr/sbin/slurmctld  # Start slurmctld service
     cp -f /etc/slurm/slurm.conf /.secret/
   else
     echo "Error: /etc/slurm/slurm.conf not found!"
@@ -234,12 +246,9 @@ _sshd_host
 _ssh_worker
 _munge_start
 _copy_secrets
-_wait_for_database
+_start_Rstudio
 _generate_slurm_conf
 _slurmctld
-_check_slurmctld
 
 tail -f /dev/null
 
-
-EXPOSE 6817 6818 6819 3306 8787 

@@ -53,11 +53,31 @@ _slurmd() {
     done
     echo ""
   fi
-  mkdir -p /var/spool/slurm/d
-  chown slurm: /var/spool/slurm/d
-  cp /.secret/slurm.conf /etc/slurm/slurm.conf
+
+
+
+
+   mkdir -p /var/spool/slurm/ctld \
+    /var/spool/slurm/d \
+    /var/log/slurm
+  chown -R slurm: /var/spool/slurm/ctld \
+    /var/spool/slurm/d \
+    /var/log/slurm
+  touch /var/log/slurmctld.log
+  chown slurm: /var/log/slurmctld.log
+
+  touch /var/log/slurm/slurmdbd.log
   touch /var/log/slurmd.log
-  chown slurm: /var/log/slurmd.log
+   chown slurm: /var/log/slurm/slurmdbd.log
+    chown slurm: /var/log/slurmd.log
+   chown slurm: /etc/slurm/slurm.conf
+   chown slurm: /etc/slurm/slurmdbd.conf
+   chown slurm:  /etc/slurm/slurmdbd.conf
+  chmod 600 /etc/slurm/slurmdbd.conf
+  chmod 600 /etc/slurm/slurm.conf
+
+
+ #start slurm service
   /usr/sbin/slurmd
 }
 
