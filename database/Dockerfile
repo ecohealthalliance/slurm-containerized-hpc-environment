@@ -2,26 +2,12 @@ FROM espirado/eco-slurm-base:23.02
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
- git \
-gcc \
-make  \
- ruby \
-ruby-dev \
- libpam0g-dev \
-libmariadb-client-lgpl-dev   \
-libmysqlclient-dev  \
-mariadb-server  \
-build-essential  \
-libssl-dev  \
-tini 
-
-        
-RUN gem install fpm
-
-
-
- 
-   tini 
+ sudo \
+  wget \ 
+  tini \ 
+  libmunge-dev  \ 
+  libmunge2 \ 
+   munge
 
 
 
@@ -40,7 +26,7 @@ ENV USE_SLURMDBD=true \
   CONTROL_MACHINE=controller \
   SLURMCTLD_PORT=6817 \
   SLURMD_PORT=6819 \
-  ACCOUNTING_STORAGE_HOST=database \
+  ACCOUNTING_STORAGE_HOST=localhost \
   ACCOUNTING_STORAGE_PORT=3306 \
   STORAGE_PASS=/var/run/munge/munge.socket.2 \
   STORAGE_USER=slurm \
@@ -48,7 +34,7 @@ ENV USE_SLURMDBD=true \
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY slurm.conf /etc/slurm/slurm.conf
-COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
+COPY slurmbd.conf /etc/slurm/slurmdbd.conf
 
 
 
