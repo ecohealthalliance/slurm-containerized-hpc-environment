@@ -64,6 +64,7 @@ _slurmd() {
     /var/spool/slurm/d \
     /var/log/slurm
   touch /var/log/slurmctld.log
+  touch /var/log/slurm.log
   chown slurm: /var/log/slurmctld.log
 
   touch /var/log/slurm/slurmdbd.log
@@ -75,6 +76,7 @@ _slurmd() {
    chown slurm:  /etc/slurm/slurmdbd.conf
   chmod 600 /etc/slurm/slurmdbd.conf
   chmod 600 /etc/slurm/slurm.conf
+  chown slurm: /var/log/slurm.log
 
 
  #start slurm service
