@@ -15,34 +15,20 @@ services:
     hostname: controller.local.dev
     networks:
       - slurm
+    ports:
+      - 8787:8787
     environment:
       USE_SLURMDBD: 'true'
       CLUSTER_NAME: snowflake
       SLURMCTLD_PORT: 6817
       SLURMD_PORT: 6819
-      ACCOUNTING_STORAGE_HOST: database
+      ACCOUNTING_STORAGE_HOST: localhost
       ACCOUNTING_STORAGE_PORT: 3306
       COMPUTE_NODES: worker01 worker02
       PARTITION_NAME: docker
       CONTROL_MACHINE: controller.local.dev
-
-  database:
-    build:
-      context: ./database
-      dockerfile: Dockerfile
-    image: espirado/slurm.database:23.02
-    depends_on:
-      - controller
-    container_name: database
-    privileged: true
-    volumes:
-      - ./home:/home
-      - ./secret:/.secret
-    restart: always
-    hostname: database.local.dev
-    networks:
-      - slurm
-    
+      SLURM_USER: slurm
+      PASSWORD: test
     healthcheck:
       test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root --password=password || exit 1"]
       interval: 10s
@@ -67,7 +53,7 @@ services:
       - slurm
     environment:
       CONTROL_MACHINE: controller.local.dev
-      ACCOUNTING_STORAGE_HOST: database
+      ACCOUNTING_STORAGE_HOST: controller
       COMPUTE_NODES: worker01 worker02
 
   worker02:
@@ -88,7 +74,7 @@ services:
       - slurm
     environment:
       CONTROL_MACHINE: controller.local.dev
-      ACCOUNTING_STORAGE_HOST: database
+      ACCOUNTING_STORAGE_HOST: controller
       COMPUTE_NODES: worker01 worker02
 
 networks:

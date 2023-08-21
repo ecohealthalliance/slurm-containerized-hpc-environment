@@ -34,9 +34,6 @@ _slurm_acct_db() {
   echo "FLUSH PRIVILEGES;" >> $SLURM_ACCT_DB_SQL
 } 
 
-
-
-
 # start munge using existing key
 _munge_start_using_key() {
   if [ ! -f /.secret/munge.key ]; then
@@ -57,7 +54,6 @@ _munge_start_using_key() {
   sudo -u munge /usr/sbin/munged
   munge -n
   munge -n | unmunge
-  remunge
 }
 
 # wait for worker user in shared /home volume
@@ -71,99 +67,61 @@ _wait_for_worker() {
     echo ""
   fi
 }
-
-
-
-
-# generate slurmdbd.conf
-_generate_slurmdbd_conf() {
-mkdir -p /etc/slurm
-  cat > /etc/slurm/slurmdbd.conf<<EOF
-#
-# Example slurmdbd.conf file.
-#
-# See the slurmdbd.conf man page for more information.
-#
-# Archive info
-#ArchiveJobs=yes
-#ArchiveDir="/tmp"
-#ArchiveSteps=yes
-#ArchiveScript=
-#JobPurge=12
-#StepPurge=1
-#
-# Authentication info
-AuthType=auth/munge
-AuthInfo=/var/run/munge/munge.socket.2
-#
-# slurmDBD info
-DbdAddr=database.local.dev
-DbdHost=database.local.dev
-#DbdPort=3306
-SlurmUser=slurm
-#MessageTimeout=300
-DebugLevel=4
-#DefaultQOS=normal,standby
-LogFile=/var/log/slurm/slurmdbd.log
-PidFile=/var/run/slurmdbd.pid
-#PluginDir=/usr/lib/slurm
-#PrivateData=accounts,users,usage,jobs
-#TrackWCKey=yes
-#
-# Database info
-StorageType=accounting_storage/mysql
-StorageHost=database.local.dev
-StoragePort=3306
-StoragePass=/var/run/munge/munge.socket.2 
-StorageUser=slurm
-StorageLoc=slurm_acct_db
-EOF
-}
-
-
-
-# run slurmdbd
 _slurmdbd() {
+  # Check for the configuration files in /etc/slurm/
+  if [[ ! -f /etc/slurm/slurm.conf ]]; then
+    echo "Error: /etc/slurm/slurm.conf not found!"
+    exit 1
+  fi
+
+  if [[ ! -f /etc/slurm/slurmdbd.conf ]]; then
+    echo "Error: /etc/slurm/slurmdbd.conf not found!"
+    exit 1
+  fi
+
+  # Setting Up Directories and Permissions
   mkdir -p /var/spool/slurm/ctld \
     /var/spool/slurm/d \
     /var/log/slurm
-  chown -R slurm: /var/spool/slurm/ctld \
+chown -R slurm: /var/spool/slurm/ctld \
     /var/spool/slurm/d \
     /var/log/slurm
-  touch /var/log/slurmctld.log
-  chown slurm: /var/log/slurmctld.log
+touch /var/log/slurmctld.log
+chown slurm: /var/log/slurmctld.log
+touch /var/log/slurm/slurmdbd.log
+/bin/chown slurm: /var/log/slurm/slurmdbd.log
+/bin/chown slurm: /etc/slurm/slurm.conf
+/bin/chown slurm: /etc/slurm/slurmdbd.conf
 
-  touch /var/log/slurm/slurmdbd.log
-   chown slurm: /var/log/slurm/slurmdbd.log
-   chown slurm: /etc/slurm/slurm.conf
-   chown slurm: /etc/slurm/slurmdbd.conf
-   chown slurm:  /etc/slurm/slurmdbd.conf
-  chmod 600 /etc/slurm/slurmdbd.conf
-  chmod 600 /etc/slurm/slurm.conf
-
-  if [[ ! -f /home/config/slurmdbd.conf ]]; then
-    echo "### generate slurmdbd.conf ###"
-    _generate_slurmdbd_conf
-  else
-    echo "### use provided slurmdbd.conf ###"
-    cp /home/config/slurmdbd.conf  /etc/slurm/slurmdbd.conf
-  fi
-  chmod 600 /etc/slurm/slurmdbd.conf
-  chown slurm: /etc/slurm/slurmdbd.conf
-
-  # Start slurmbd service
-  /usr/sbin/slurmdbd
-  
-  cp /etc/slurm/slurmdbd.conf /.secret/slurmdbd.conf
+# Checking and changing permission for slurm.conf
+echo "Changing file permission for /etc/slurm/slurm.conf..."
+/bin/chmod 600 /etc/slurm/slurm.conf
+if [ "$(stat -c %a /etc/slurm/slurm.conf)" == "600" ]; then
+    echo "File permission for /etc/slurm/slurm.conf changed successfully."
+else
+    echo "Failed to change file permission for /etc/slurm/slurm.conf."
+    exit 1
+fi
+# Checking and changing permission for slurmdbd.conf
+echo "Changing file permission for /etc/slurm/slurmdbd.conf..."
+/bin/chmod 600 /etc/slurm/slurmdbd.conf
+if [ "$(stat -c %a /etc/slurm/slurmdbd.conf)" == "600" ]; then
+    echo "File permission for /etc/slurm/slurmdbd.conf changed successfully."
+else
+    echo "Failed to change file permission for /etc/slurm/slurmdbd.conf."
+    exit 1
+fi
+ # Start slurmctld service
+    /usr/sbin/slurmdbd
+/bin/chown slurm: /var/run/slurmdbd.pid
 }
-
-
 ### main ###
 _sshd_host
-_slurm_acct_db
 _mariadb_start
+_slurm_acct_db
 _munge_start_using_key
 _wait_for_worker
 _slurmdbd
 
-tail -f /dev/null
+
+

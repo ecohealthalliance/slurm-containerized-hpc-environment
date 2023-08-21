@@ -76,7 +76,7 @@ sudo chmod 400 /etc/munge/munge.key
 _copy_secrets() {
   cp /home/worker/worker-secret.tar.gz /.secret/worker-secret.tar.gz
   cp /home/worker/setup-worker-ssh.sh /.secret/setup-worker-ssh.sh
-  cp /etc/munge/munge.key /.secret/munge.key
+#   cp /etc/munge/munge.key /.secret/munge.key
   rm -f /home/worker/worker-secret.tar.gz
   rm -f /home/worker/setup-worker-ssh.sh
 }
@@ -128,32 +128,28 @@ _slurmctld() {
 
   # Setting Up Directories and Permissions
   
- 
-
-
-
  mkdir -p /var/spool/slurm/ctld \
     /var/spool/slurm/d \
     /var/log/slurm
-  chown -R slurm: /var/spool/slurm/ctld \
+  /usr/sbin/chown -R slurm: /var/spool/slurm/ctld \
     /var/spool/slurm/d \
     /var/log/slurm
   touch /var/log/slurmctld.log
-  chown slurm: /var/log/slurmctld.log
+  /usr/sbin/chown slurm: /var/log/slurmctld.log
 
   touch /var/log/slurm/slurmdbd.log
-   chown slurm: /var/log/slurm/slurmdbd.log
-   chown slurm: /etc/slurm/slurm.conf
-   chown slurm: /etc/slurm/slurmdbd.conf
-   chown slurm:  /etc/slurm/slurmdbd.conf
-  chmod 600 /etc/slurm/slurmdbd.conf
-  chmod 600 /etc/slurm/slurm.conf
+   /usr/sbin/chown slurm: /var/log/slurm/slurmdbd.log
+   /usr/sbin/chown slurm: /etc/slurm/slurm.conf
+   /usr/sbin/chown slurm: /etc/slurm/slurmdbd.conf
+   /usr/sbin/chown slurm:  /etc/slurm/slurmdbd.conf
+  /usr/sbin/chmod 600 /etc/slurm/slurmdbd.conf
+  /usr/sbin/chmod 600 /etc/slurm/slurm.conf
 
   # Start slurmbd service
   /usr/sbin/slurmdbd
 
    # Check if slurmbd is up and running
-  for i in {1..5}; do
+  for i in {1..2}; do
     if pgrep -x "slurmbd" > /dev/null; then
       break
     fi
