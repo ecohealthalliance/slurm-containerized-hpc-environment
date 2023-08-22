@@ -28,7 +28,7 @@ ENV USE_SLURMDBD=true \
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY slurm.conf /etc/slurm/slurm.conf
 COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
-
+COPY cgroup.conf    /etc/slurm/cgroup.conf 
 
 
 

@@ -131,20 +131,23 @@ _slurmctld() {
  mkdir -p /var/spool/slurm/ctld \
     /var/spool/slurm/d \
     /var/log/slurm
-  /usr/sbin/chown -R slurm: /var/spool/slurm/ctld \
+  chown -R slurm: /var/spool/slurm/ctld \
     /var/spool/slurm/d \
     /var/log/slurm
   touch /var/log/slurmctld.log
-  /usr/sbin/chown slurm: /var/log/slurmctld.log
+  chown slurm: /var/log/slurmctld.log
 
   touch /var/log/slurm/slurmdbd.log
-   /usr/sbin/chown slurm: /var/log/slurm/slurmdbd.log
-   /usr/sbin/chown slurm: /etc/slurm/slurm.conf
-   /usr/sbin/chown slurm: /etc/slurm/slurmdbd.conf
-   /usr/sbin/chown slurm:  /etc/slurm/slurmdbd.conf
-  /usr/sbin/chmod 600 /etc/slurm/slurmdbd.conf
-  /usr/sbin/chmod 600 /etc/slurm/slurm.conf
+   chown slurm: /var/log/slurm/slurmdbd.log
+   chown slurm: /etc/slurm/slurm.conf
+   chown slurm: /etc/slurm/slurmdbd.conf
+   chown slurm:  /etc/slurm/slurmdbd.conf
+  chmod 600 /etc/slurm/slurmdbd.conf
+  chmod 600 /etc/slurm/slurm.conf
+  chmod 644 /etc/slurm/slurm.conf
 
+#make slurm.conf writable by slurm group
+ chmod g+r /etc/slurm/slurm.conf
   # Start slurmbd service
   /usr/sbin/slurmdbd
 

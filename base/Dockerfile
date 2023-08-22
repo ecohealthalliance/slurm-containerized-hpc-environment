@@ -34,7 +34,9 @@ RUN apt-get update && apt-get install -y \
   python3-pip \ 
   libmunge-dev  \ 
   libmunge2 \ 
-   munge
+   munge 
+   
+    
 
 # Install Ruby, Rubygems, and then fpm
 RUN apt-get update && apt-get install -y \
@@ -46,7 +48,7 @@ RUN apt-get update && apt-get install -y \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 
-
+RUN apt-get update && apt-get install -y libdbus-1-dev
 
 # Ensure locales are generated
 RUN apt-get install -y locales && \
