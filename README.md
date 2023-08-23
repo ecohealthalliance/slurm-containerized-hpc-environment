@@ -5,7 +5,7 @@ The goal of this project is to outline the strategies for integrating Simple Lin
 ## Contents
 
 1. [base](base) - Slurm base image from which other components are derived
-2. [controller +  database ](controller) - Slurm controller (head-node) definition and database for accounting information)
+2. [controller +  database ](Controller) - Slurm controller (head-node) definition and database for accounting information)
 3. [worker](worker) - Slurm worker (compute-node) definition
 
 ## Container Overview
@@ -21,7 +21,7 @@ controller | Slurm Primary Controller | controller.local.dev
 worker01 | Slurm Worker | worker01.local.dev
 worker02 | Slurm Worker | worker02.local.dev
 worker03 | Slurm Worker | worker03.local.dev
-worker0 | Slurm Worker | worker04.local.dev
+worker04 | Slurm Worker | worker04.local.dev
 
 
 
@@ -43,9 +43,9 @@ Four containers should be observed running when completed
 ```console
 $ docker ps
 CONTAINER ID        IMAGE                                COMMAND                  CREATED             STATUS              PORTS                                              NAMES
-995183e9391e        espirado/slurm.worker:19.05.1       "/usr/local/bin/tini…"   10 seconds ago      Up 30 seconds       22/tcp, 3306/tcp, 6817-6819/tcp, 60001-63000/tcp   8787/tcp worker01
-a8382a486989        espirado/slurm.worker:19.05.1       "/usr/local/bin/tini…"   10 seconds ago      Up 30 seconds       22/tcp, 3306/tcp, 6817-6819/tcp, 60001-63000/tcp   8787/tcp worker02
-24e951854109        espirado/slurm.controller:19.05.1   "/usr/local/bin/tini…"   11 seconds ago      Up 31 seconds       22/tcp, 3306/tcp, 6817-6819/tcp,    0.0.0.0:8787->8787/tcp controller
+995183e9391e        espirado/slurm.worker:23.02       "/usr/local/bin/tini…"   10 seconds ago      Up 30 seconds       22/tcp, 3306/tcp, 6817-6819/tcp, 60001-63000/tcp   8787/tcp worker01
+a8382a486989        espirado/slurm.worker:23.02       "/usr/local/bin/tini…"   10 seconds ago      Up 30 seconds       22/tcp, 3306/tcp, 6817-6819/tcp, 60001-63000/tcp   8787/tcp worker02
+24e951854109        espirado/slurm.controller:23.02   "/usr/local/bin/tini…"   11 seconds ago      Up 31 seconds       22/tcp, 3306/tcp, 6817-6819/tcp,    0.0.0.0:8787->8787/tcp controller
 ```
 
 ## Examples using Slurm
@@ -64,7 +64,7 @@ The examples make use of the following commands.
 
 ### controller
 
-Visit localhost:8787 then log to Rstudio interface with `rstudio:rstudio` as username and password 
+Visit localhost:8787 [RSTUDIO](localhost:8787) then log to Rstudio interface with `rstudio:rstudio` as username and password 
 
 Use the `docker exec` call to gain a shell on the `controller` container.
 
