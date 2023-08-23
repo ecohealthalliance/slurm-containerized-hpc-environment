@@ -166,10 +166,20 @@ _slurmctld() {
     exit 1
   fi
 
+
+
   # Start slurmctld service
     /usr/sbin/slurmctld 
 }
 
+
+#make slurm.conf writable by slurm group
+ chmod 644 /etc/slurm/slurm.conf
+ chmod g+r /etc/slurm/slurm.conf
+
+
+usermod -aG slurm rstudio 
+usermod -aG slurm worker
 
 ### main ###
 _sshd_host

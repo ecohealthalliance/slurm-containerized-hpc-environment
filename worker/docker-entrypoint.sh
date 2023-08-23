@@ -108,7 +108,8 @@ echo "Finished creating /sys/fs/cgroup/system.slice directory."
  chmod g+r /etc/slurm/slurm.conf
 
 
-
+usermod -aG slurm rstudio 
+usermod -aG slurm worker
   #create directory /sys/fs/cgroup/system.slice
   #create cgroup config file /etc/slurm/cgroup.conf
 

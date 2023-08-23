@@ -24,7 +24,7 @@ services:
       SLURMD_PORT: 6819
       ACCOUNTING_STORAGE_HOST: localhost
       ACCOUNTING_STORAGE_PORT: 3306
-      COMPUTE_NODES: worker01 worker02
+      COMPUTE_NODES: worker01 worker02 worker03 worker04
       PARTITION_NAME: docker
       CONTROL_MACHINE: controller.local.dev
       SLURM_USER: slurm
@@ -54,7 +54,7 @@ services:
     environment:
       CONTROL_MACHINE: controller.local.dev
       ACCOUNTING_STORAGE_HOST: controller
-      COMPUTE_NODES: worker01 worker02
+      COMPUTE_NODES: worker01 worker02 worker03 worker04
 
   worker02:
     build:
@@ -75,7 +75,49 @@ services:
     environment:
       CONTROL_MACHINE: controller.local.dev
       ACCOUNTING_STORAGE_HOST: controller
-      COMPUTE_NODES: worker01 worker02
+      COMPUTE_NODES: worker01 worker02 worker03 worker04
+  
+  worker03:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    image: espirado/slurm.worker:23.02
+    depends_on:
+      - controller
+    container_name: worker03
+    privileged: true
+    volumes:
+      - ./home:/home
+      - ./secret:/.secret
+    restart: always
+    hostname: worker03.local.dev
+    networks:
+      - slurm
+    environment:
+      CONTROL_MACHINE: controller.local.dev
+      ACCOUNTING_STORAGE_HOST: controller
+      COMPUTE_NODES: worker01 worker02 worker03 worker04
+
+  worker04:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    image: espirado/slurm.worker:23.02
+    depends_on:
+      - controller
+    container_name: worker04
+    privileged: true
+    volumes:
+      - ./home:/home
+      - ./secret:/.secret
+    restart: always
+    hostname: worker04.local.dev
+    networks:
+      - slurm
+    environment:
+      CONTROL_MACHINE: controller.local.dev
+      ACCOUNTING_STORAGE_HOST: controller
+      COMPUTE_NODES: worker01 worker02 worker03 worker04   
 
 networks:
   slurm:
