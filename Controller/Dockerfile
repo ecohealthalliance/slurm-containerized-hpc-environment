@@ -33,10 +33,14 @@ ENV USE_SLURMDBD=true \
   PARTITION_NAME=docker
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-COPY slurm.conf /etc/slurm/slurm.conf
-COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
-
-
+COPY /config/slurm.conf /etc/slurm/slurm.conf
+COPY /config/slurmdbd.conf /etc/slurm/slurmdbd.conf
+COPY /scripts/copy_secrets.sh /copy_secrets.sh
+COPY /scripts/munge.sh /munge.sh
+COPY /scripts/db_start.sh /db_start.sh
+COPY /scripts/slurmctld.sh /slurmctld.sh
+COPY /scripts/direc_perm.sh /direct_perm.sh
+COPY /scripts/slurmdbd.sh /slurmdbd.sh
 
 
 # Modify permissions

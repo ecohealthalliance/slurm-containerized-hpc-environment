@@ -26,14 +26,20 @@ ENV USE_SLURMDBD=true \
   PARTITION_NAME=docker
 
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-COPY slurm.conf /etc/slurm/slurm.conf
-COPY slurmdbd.conf /etc/slurm/slurmdbd.conf
-COPY cgroup.conf    /etc/slurm/cgroup.conf 
-
+COPY /config/slurm.conf /etc/slurm/slurm.conf
+COPY /config/slurmdbd.conf /etc/slurm/slurmdbd.conf
+COPY /config/cgroup.conf    /etc/slurm/cgroup.conf 
+COPY /scripts/munge_worker_init.sh /munge_worker_init.sh
+COPY /scripts/slurm_setup.sh /slurm_setup.sh
+COPY /scripts/wait_worker_key.sh /wait_worker_key.sh
 
 
 # Modify permissions
 RUN chmod +x /docker-entrypoint.sh
+RUN chmod +x /munge_worker_init.sh
+RUN chmod +x /slurm_setup.sh
+RUN chmod +x /wait_worker_key.sh
+
 
 ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…"]
 
