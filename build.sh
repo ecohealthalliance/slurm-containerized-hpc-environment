@@ -1,11 +1,23 @@
 #!/bin/bash
 
-set -e 
+set -e
 set -x
 
-for tag in base gpu
-do
-  image=ecohealthalliance/reservoir:$tag
- # time docker pull $image > /dev/null
-  time docker build -f Dockerfile.$tag --cache-from $image -t $image .
-done
+# Define the base name for your images using GitHub Container Registry
+base_image_name=ghcr.io/ecohealthalliance/slurm-containerized-hpc-environment
+
+# Build and tag the GPU image for the controller
+controller_gpu_image=$base_image_name:controller-gpu
+echo "Building and tagging the controller GPU image..."
+cd Controller
+time docker build -f Dockerfile.gpu -t $controller_gpu_image .
+cd ..
+
+# Build and tag the GPU image for the worker
+worker_gpu_image=$base_image_name:worker-gpu
+echo "Building and tagging the worker GPU image..."
+cd Worker
+time docker build -f Dockerfile.gpu -t $worker_gpu_image .
+cd ..
+
+echo "Docker images have been built and tagged successfully."
