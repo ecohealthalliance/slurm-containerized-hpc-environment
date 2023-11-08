@@ -4,11 +4,18 @@ set -e
 set -x
 
 # Define the base name for your images using GitHub Container Registry
-base_image_name=ghcr.io/ecohealthalliance/slurm-containerized-hpc-environment
+base_image_name=ghcr.io/ecohealthalliance/slurm_reservoir
 
-# Log in to GitHub Container Registry
-echo "Logging in to GitHub Container Registry..."
-echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+
+
+# Build and tag the base image
+base_image=$base_image_name:base
+echo "Building and tagging the base image..."
+cd base
+time docker build -f Dockerfile -t $base_image .
+echo "Pushing the base image..."
+docker push $base_image
+cd ..
 
 # Build and push the GPU image for the controller
 controller_gpu_image=$base_image_name:controller-gpu
@@ -22,7 +29,7 @@ cd ..
 # Build and push the GPU image for the worker
 worker_gpu_image=$base_image_name:worker-gpu
 echo "Building the worker GPU image..."
-cd worker
+cd Worker
 time docker build -f Dockerfile.gpu -t $worker_gpu_image .
 echo "Pushing the worker GPU image..."
 docker push $worker_gpu_image

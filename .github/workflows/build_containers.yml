@@ -6,14 +6,15 @@ on:
       - main
     paths:
       - 'Controller/Dockerfile.gpu'
-      - 'worker/Dockerfile.gpu'
+      - 'Worker/Dockerfile.gpu'
+      - 'base/Dockerfile'
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [controller, worker]
+        node: [base, controller, worker]
     steps:
       - uses: actions/checkout@v2
       
@@ -27,11 +28,22 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push GPU Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v2
         with:
           context: ./${{ matrix.node }}
           file: ./${{ matrix.node }}/Dockerfile.gpu
           push: true
-          tags: ghcr.io/ecohealthalliance/slurm-containerized-hpc-environment:${{ matrix.node }}-gpu
-          cache-from: type=registry,ref=ghcr.io/ecohealthalliance/slurm-containerized-hpc-environment:${{ matrix.node }}-gpu
+          tags: ghcr.io/ecohealthalliance/slurm_reservoir:${{ matrix.node }}-gpu
+          cache-from: type=registry,ref=ghcr.io/ecohealthalliance/slurm_reservoir:${{ matrix.node }}-gpu
+        if: ${{ matrix.node != 'base' }}
+
+      - name: Build and push base Docker image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./base
+          file: ./base/Dockerfile
+          push: true
+          tags: ghcr.io/ecohealthalliance/slurm_reservoir:base
+          cache-from: type=registry,ref=ghcr.io/ecohealthalliance/slurm_reservoir:base
+        if: ${{ matrix.node == 'base' }}
