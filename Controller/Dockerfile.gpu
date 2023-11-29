@@ -1,4 +1,4 @@
-FROM espirado/eco-slurm-base:23.02 
+FROM ghcr.io/ecohealthalliance/slurm_reservoir:base
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
@@ -8,6 +8,14 @@ RUN apt-get update && apt-get install -y \
   libmunge-dev  \ 
   libmunge2 \ 
    munge
+
+
+
+# Install OpenSSH server and create an SSH user
+RUN apt-get update && \
+    apt-get install -y openssh-server && \
+    echo 'root:password' | chpasswd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
 
 
@@ -46,6 +54,6 @@ COPY /scripts/slurmdbd.sh /slurmdbd.sh
 # Modify permissions
 RUN chmod +x /docker-entrypoint.sh
 
-ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…", "/usr/sbin/sshd", "-D"]
 
-EXPOSE 6817 6818 6819 3306 8787 
+EXPOSE 22 6817 6818 6819 3306 8787 

@@ -1,10 +1,20 @@
-FROM espirado/eco-slurm-base:23.02 
+FROM ghcr.io/ecohealthalliance/slurm_reservoir:base
 
 
 RUN apt  update
 RUN apt-get install munge libmunge2 libmunge-dev
  
  
+
+
+
+ # Install OpenSSH server and create an SSH user
+RUN apt-get update && \
+    apt-get install -y openssh-server && \
+    echo 'root:password' | chpasswd && \
+    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+
 # Install OpenMPI
 RUN apt-get install -y openmpi-bin
 
@@ -41,6 +51,7 @@ RUN chmod +x /slurm_setup.sh
 RUN chmod +x /wait_worker_key.sh
 
 
-ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…"]
 
-EXPOSE 6817 6818 6819 3306 8787 
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…", "/usr/sbin/sshd", "-D"]
+
+EXPOSE 22 6817 6818 6819 3306 8787 
