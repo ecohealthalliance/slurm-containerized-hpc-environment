@@ -1,30 +1,28 @@
-FROM ghcr.io/ecohealthalliance/slurm_reservoir:base
+# Use a base image
+FROM  ghcr.io/ecohealthalliance/slurm_reservoir:base 
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV SLURM_VERSION=23.02.4 
 
 
-RUN apt  update
-RUN apt-get install munge libmunge2 libmunge-dev
- 
- 
+# Install SSH server
+RUN apt-get update && apt-get install -y openssh-server
 
 
-
- # Install OpenSSH server and create an SSH user
-RUN apt-get update && \
-    apt-get install -y openssh-server && \
-    echo 'root:password' | chpasswd && \
-    sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-
-
-# Install OpenMPI
-RUN apt-get install -y openmpi-bin
-
-# Install Lmod 7.7
-# Install Lmod
-RUN apt-get install -y lmod
-RUN apt-get update && apt-get install -y supervisor && rm -rf /var/lib/apt/lists/*
+# Copy and make system tools installation script executable
+COPY scripts/install_system_tools.sh /install_system_tools.sh 
+RUN chmod +x /install_system_tools.sh 
+RUN /install_system_tools.sh
 
 
 
+# Clean up package cache and remove temporary files
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Define volumes
+
+
+# Set environment variables for SLURM
 ENV USE_SLURMDBD=true \
   CLUSTER_NAME=snowflake \
   CONTROL_MACHINE=controller \
@@ -35,23 +33,29 @@ ENV USE_SLURMDBD=true \
   STORAGE_USER=slurm \
   PARTITION_NAME=docker
 
+# Copy necessary configuration files and scripts
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY /config/slurm.conf /etc/slurm/slurm.conf
 COPY /config/slurmdbd.conf /etc/slurm/slurmdbd.conf
-COPY /config/cgroup.conf    /etc/slurm/cgroup.conf 
+COPY /config/cgroup.conf /etc/slurm/cgroup.conf 
 COPY /scripts/munge_worker_init.sh /munge_worker_init.sh
 COPY /scripts/slurm_setup.sh /slurm_setup.sh
 COPY /scripts/wait_worker_key.sh /wait_worker_key.sh
+COPY /config/userconf.sh /userconf.sh 
+COPY /config/ssh_config  /etc/ssh/sshd_config
+COPY /config/ansible_user.sh  /ansible_user.sh
 
 
-# Modify permissions
+# Modify permissions for scripts
 RUN chmod +x /docker-entrypoint.sh
 RUN chmod +x /munge_worker_init.sh
 RUN chmod +x /slurm_setup.sh
 RUN chmod +x /wait_worker_key.sh
+RUN chmod +x /userconf.sh 
+RUN chmod +x /ansible_user.sh
 
+# Define the entry point for the container
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…"]
 
-
-ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…", "/usr/sbin/sshd", "-D"]
-
-EXPOSE 22 6817 6818 6819 3306 8787 
+# Expose necessary ports
+EXPOSE 22 6817 6818 6819 3306 8787

@@ -48,6 +48,7 @@ _run_scripts(){
   bash  /direct_perm.sh
   bash /slurmdbd.sh 
   bash  /slurmctld.sh
+  bash /ansible_user.sh
  
 }
 
