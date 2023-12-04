@@ -8,12 +8,18 @@ _sshd_host() {
     ssh-keygen -t rsa -f /etc/ssh/ssh_host_rsa_key -N ''
   fi
   /usr/sbin/sshd
+
+
+  
 }
 
 _run_scripts(){
-bash /wait_worker_key.sh
+#bash /wait_worker_key.sh
 bash /munge_worker_init.sh
 bash /slurm_setup.sh
+bash /ansible_user.sh
+
+
 
 }
 # run slurmd
