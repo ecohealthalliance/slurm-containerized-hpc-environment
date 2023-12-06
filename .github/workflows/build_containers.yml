@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'Controller/Dockerfile.gpu'
+      - 'controller/Dockerfile.gpu'
       - 'worker/Dockerfile.gpu' # Make sure this matches the case in your repo
       - 'base/Dockerfile'
 
@@ -28,7 +28,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image for controller and worker
+      - name: Build and push Docker image for Controller and worker
         if: ${{ matrix.node != 'base' }}
         uses: docker/build-push-action@v2
         with:
