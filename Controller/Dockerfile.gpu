@@ -43,7 +43,7 @@ COPY /scripts/direc_perm.sh /direct_perm.sh
 COPY /scripts/slurmdbd.sh /slurmdbd.sh
 COPY scripts/install_system_tools.sh /install_system_tools.sh
 COPY /config/userconf.sh /userconf.sh
-COPY /config/ssh_config  /etc/ssh/sshd_config
+#COPY /config/ssh_config  /etc/ssh/sshd_config
 COPY /config/ansible_user.sh  /ansible_user.sh
 
 # Make scripts executable 

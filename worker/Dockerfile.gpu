@@ -3,7 +3,6 @@ FROM  ghcr.io/ecohealthalliance/slurm_reservoir:base
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV SLURM_VERSION=23.02.4 
 
 
 # Install SSH server

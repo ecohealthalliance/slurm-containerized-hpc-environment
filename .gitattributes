@@ -1,0 +1,4 @@
+Controller/config/ssh_config  filter=git-crypt diff=git-crypt
+Controller/config/ansible_user.sh filter=git-crypt diff=git-crypt
+worker/config/ssh_config  filter=git-crypt diff=git-crypt
+worker/config/ansible_user.sh filter=git-crypt diff=git-crypt
