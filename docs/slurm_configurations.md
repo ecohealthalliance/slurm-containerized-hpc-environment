@@ -106,3 +106,10 @@ This SlurmDBD configuration file, named `slurmdbd.conf`, is used to configure th
 This configuration file defines how SlurmDBD interacts with the database server, manages data archiving, and handles authentication for secure communication. It plays a crucial role in storing and retrieving accounting and job information for the "cluster1" Slurm cluster.
 
 Make sure to customize the database-related parameters according to your specific database server setup and security considerations.
+
+
+# User Management
+Uses uses sacctmgr to manage users who can execute/submit jobs through slurm. Users need have to be part of slurm group inorder to run slurm
+
+- add user to slurm account       sudo sacctmgr add user name=rstudio account=admin 
+- add accounts to slurm cluster   sudo sacctmgr add account name=texas Description="project repel"
