@@ -20,7 +20,7 @@ cd ..
 # Build and push the GPU image for the controller
 controller_gpu_image=$base_image_name:controller-gpu
 echo "Building the controller GPU image..."
-cd Controller
+cd controller
 time docker build -f Dockerfile.gpu -t $controller_gpu_image .
 echo "Pushing the controller GPU image..."
 docker push $controller_gpu_image
