@@ -21,6 +21,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Define volumes
 
 
+
+
 # Set environment variables for SLURM
 ENV USE_SLURMDBD=true \
   CLUSTER_NAME=snowflake \

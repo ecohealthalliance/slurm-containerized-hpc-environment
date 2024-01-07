@@ -4,13 +4,13 @@ set -e
 # start munge using existing key
 _munge_start_using_key() {
   echo -n "cheking for munge.key"
-  while [ ! -f /.secret/munge.key ]; do
+  while [ ! -f /work/.secrets/munge.key  ]; do
     echo -n "."
     sleep 1
   done
   echo ""
   mkdir -p /var/run/munge
-  cp /.secret/munge.key /etc/munge/munge.key
+  cp /work/.secrets/munge.key  /etc/munge/munge.key
   chown -R munge: /etc/munge /var/lib/munge /var/log/munge /var/run/munge
   chmod 0700 /etc/munge
   chmod 0711 /var/lib/munge
