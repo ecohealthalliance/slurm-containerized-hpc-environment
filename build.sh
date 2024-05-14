@@ -16,7 +16,7 @@ cd ..
 # Build and tag the GPU image for the controller
 controller_gpu_image=$base_image_name:controller-gpu
 echo "Building and tagging the controller GPU image..."
-cd Controller
+cd controller
 time docker build -f Dockerfile.gpu -t $controller_gpu_image .
 cd ..
 

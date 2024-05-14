@@ -1,51 +1,26 @@
 # Use a base image
-FROM  ghcr.io/ecohealthalliance/slurm_reservoir:base 
+FROM ghcr.io/ecohealthalliance/slurm_reservoir:base 
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV SLURM_VERSION=23.02.4 
-
 
 # Install SSH server
-RUN apt-get update && apt-get install -y openssh-server
+RUN apt-get update && apt-get install -y openssh-server && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
-
-# Copy and make system tools installation script executable
+# Copy scripts and make them executable
 COPY scripts/install_system_tools.sh /install_system_tools.sh 
-RUN chmod +x /install_system_tools.sh 
-RUN /install_system_tools.sh
-
-
-
-# Clean up package cache and remove temporary files
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-# Define volumes
-
-
-# Set environment variables for SLURM
-ENV USE_SLURMDBD=true \
-  CLUSTER_NAME=snowflake \
-  CONTROL_MACHINE=controller \
-  SLURMCTLD_PORT=6817 \
-  SLURMD_PORT=6819 \
-  ACCOUNTING_STORAGE_PORT=3306 \
-  STORAGE_PASS=/var/run/munge/munge.socket.2 \
-  STORAGE_USER=slurm \
-  PARTITION_NAME=docker
-
-# Copy necessary configuration files and scripts
+COPY scripts/module_setup.sh /module_setup.sh
+COPY scripts/munge_worker_init.sh /munge_worker_init.sh
+COPY scripts/slurm_setup.sh /slurm_setup.sh
+COPY scripts/wait_worker_key.sh /wait_worker_key.sh
+COPY config/userconf.sh /userconf.sh 
+COPY config/ssh_config /etc/ssh/sshd_config
+COPY config/ansible_user.sh /ansible_user.sh
 COPY docker-entrypoint.sh /docker-entrypoint.sh
-COPY /config/slurm.conf /etc/slurm/slurm.conf
-COPY /config/slurmdbd.conf /etc/slurm/slurmdbd.conf
-COPY /config/cgroup.conf /etc/slurm/cgroup.conf 
-COPY /scripts/munge_worker_init.sh /munge_worker_init.sh
-COPY /scripts/slurm_setup.sh /slurm_setup.sh
-COPY /scripts/wait_worker_key.sh /wait_worker_key.sh
-COPY /config/userconf.sh /userconf.sh 
-COPY /config/ssh_config  /etc/ssh/sshd_config
-COPY /config/ansible_user.sh  /ansible_user.sh
+COPY scripts/module_setup.sh /module.sh
 
-
+# Make scripts executable
 # Modify permissions for scripts
 RUN chmod +x /docker-entrypoint.sh
 RUN chmod +x /munge_worker_init.sh
@@ -54,8 +29,13 @@ RUN chmod +x /wait_worker_key.sh
 RUN chmod +x /userconf.sh 
 RUN chmod +x /ansible_user.sh
 
+# Copy necessary configuration files
+COPY config/slurm.conf /etc/slurm/slurm.conf
+COPY config/slurmdbd.conf /etc/slurm/slurmdbd.conf
+COPY config/cgroup.conf /etc/slurm/cgroup.conf 
+
 # Define the entry point for the container
-ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init","/opt/nvidia/nvidia_…"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/docker-entrypoint.sh", "/init", "/opt/nvidia/nvidia_…"]
 
 # Expose necessary ports
 EXPOSE 22 6817 6818 6819 3306 8787

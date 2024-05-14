@@ -1,3 +1,0 @@
-IS_RESERVOIR=true
-TEMPDIR=~/.tmp
-R_LIBS_USER=~/R/%p-library/%v
