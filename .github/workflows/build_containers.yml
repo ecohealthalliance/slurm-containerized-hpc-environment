@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-and-push-base:
-    runs-on: [self-hosted, linux, gpu, onprem-aegypti]
+    runs-on: [self-hosted, linux, X64]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Docker Buildx
