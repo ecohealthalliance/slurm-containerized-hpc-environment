@@ -1,7 +1,7 @@
 # slurm-containerized-hpc-environment
 
 [![Docker](https://img.shields.io/badge/Container%20Registry-GHCR-blue)](https://ghcr.io/ecohealthalliance/slurm_reservoir)
-[![Build and Push Docker Images](https://github.com/ecohealthalliance/slurm-containerized-hpc-environment/actions/workflows/build_containers.yml/badge.svg)](https://github.com/ecohealthalliance/slurm-containerized-hpc-environment/actions/workflows/build_containers.yml)
+[![Build and Push Docker Images](https://github.com/ecohealthalliance/slurm-containerized-hpc-environment/actions/workflows/docker-publish.yml/badge.svg?branch=main)](https://github.com/ecohealthalliance/slurm-containerized-hpc-environment/actions/workflows/docker-publish.yml)
 
 
 The goal of this project is to outline the strategies for integrating Simple Linux Utility for Resource Management(SLURM) into our existing High-Performance Computing(HPC) platform.
