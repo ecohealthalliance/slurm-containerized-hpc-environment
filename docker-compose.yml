@@ -88,58 +88,6 @@ services:
           memory: 8G
           
 
-
-  worker03:
-    image: ghcr.io/ecohealthalliance/slurm_reservoir:worker-gpu
-    depends_on:
-      - controller
-    container_name: worker03
-    privileged: true
-    volumes:
-         - ./home:/home
-         - ./secret:/.secret
-    restart: always
-    hostname: worker01.local.dev
-    networks:
-      - slurm
-    environment:
-      CONTROL_MACHINE: controller.local.dev
-      ACCOUNTING_STORAGE_HOST: controller
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 16G
-        reservations:
-          cpus: '2'
-          memory: 8G
-                             
-
-
-  worker04:
-    image: ghcr.io/ecohealthalliance/slurm_reservoir:worker-gpu
-    depends_on:
-      - controller
-    container_name: worker04
-    privileged: true
-    volumes:
-       - ./home:/home
-       - ./secret:/.secret
-    restart: always
-    hostname: worker01.local.dev
-    networks:
-      - slurm
-    environment:
-      CONTROL_MACHINE: controller.local.dev
-      ACCOUNTING_STORAGE_HOST: controller
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: 16G
-        reservations:
-          cpus: '2'
-          memory: 8G
           
 
 networks:
