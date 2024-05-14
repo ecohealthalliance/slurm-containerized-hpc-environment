@@ -51,6 +51,7 @@ run_scripts() {
   bash /ansible_user.sh
   bash /slurmdbd.sh 
   bash /slurmctld.sh
+  bash /module.sh
   
 }
 

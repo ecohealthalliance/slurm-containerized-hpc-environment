@@ -18,6 +18,7 @@ _run_scripts(){
 bash /munge_worker_init.sh
 bash /slurm_setup.sh
 bash /ansible_user.sh
+bash /module.sh
 
 
 
