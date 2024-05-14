@@ -11,37 +11,19 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-and-push:
+  build-and-push-base:
     runs-on: [self-hosted, linux, gpu, onprem-aegypti]
-    strategy:
-      matrix:
-        node: [base, Controller, worker]
-
     steps:
       - uses: actions/checkout@v2
-      
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
-      
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push Docker image for Controller and worker
-        if: ${{ matrix.node != 'base' }}
-        uses: docker/build-push-action@v2
-        with:
-          context: ./${{ matrix.node }}
-          file: ./${{ matrix.node }}/Dockerfile.gpu
-          push: true
-          tags: ghcr.io/ecohealthalliance/slurm_reservoir:${{ matrix.node }}-gpu
-          cache-from: type=registry,ref=ghcr.io/ecohealthalliance/slurm_reservoir:${{ matrix.node }}-gpu
-
       - name: Build and push base Docker image
-        if: ${{ matrix.node == 'base' }}
         uses: docker/build-push-action@v2
         with:
           context: ./base
@@ -49,3 +31,47 @@ jobs:
           push: true
           tags: ghcr.io/ecohealthalliance/slurm_reservoir:base
           cache-from: type=registry,ref=ghcr.io/ecohealthalliance/slurm_reservoir:base
+
+  build-and-push-controller:
+    needs: build-and-push-base
+    runs-on: [self-hosted, linux, gpu, onprem-aegypti]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image for Controller
+        uses: docker/build-push-action@v2
+        with:
+          context: ./Controller
+          file: ./Controller/Dockerfile.gpu
+          push: true
+          tags: ghcr.io/ecohealthalliance/slurm_reservoir:Controller-gpu
+          cache-from: type=registry,ref=ghcr.io/ecohealthalliance/slurm_reservoir:Controller-gpu
+
+  build-and-push-worker:
+    needs: build-and-push-controller
+    runs-on: [self-hosted, linux, gpu, onprem-aegypti]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image for worker
+        uses: docker/build-push-action@v2
+        with:
+          context: ./worker
+          file: ./worker/Dockerfile.gpu
+          push: true
+          tags: ghcr.io/ecohealthalliance/slurm_reservoir:worker-gpu
+          cache-from: type=registry,ref=ghcr.io/ecohealthalliance/slurm_reservoir:worker-gpu
