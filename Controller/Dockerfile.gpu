@@ -3,7 +3,7 @@ FROM  ghcr.io/ecohealthalliance/slurm_reservoir:base
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
-ENV SLURM_VERSION=23.02.4 
+ENV SLURM_VERSION=23.11.6 
 
 
 # Clean up package cache and remove temporary files
@@ -41,10 +41,11 @@ COPY /scripts/db_start.sh /db_start.sh
 COPY /scripts/slurmctld.sh /slurmctld.sh
 COPY /scripts/direc_perm.sh /direct_perm.sh
 COPY /scripts/slurmdbd.sh /slurmdbd.sh
-COPY scripts/install_system_tools.sh /install_system_tools.sh
-COPY /config/userconf.sh /userconf.sh
+COPY  /scripts/install_system_tools.sh /install_system_tools.sh
+COPY /scripts/userconf.sh /userconf.sh
+COPY /scripts/module_setup.sh /module.sh
 COPY /config/ssh_config  /etc/ssh/sshd_config
-COPY /config/ansible_user.sh  /ansible_user.sh
+COPY /scripts/ansible_user.sh  /ansible_user.sh
 
 # Make scripts executable 
 RUN chmod +x /docker-entrypoint.sh

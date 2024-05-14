@@ -1,48 +1,55 @@
+# Use the specified base image
 FROM ghcr.io/ecohealthalliance/reservoir:gpu
 
+# Set noninteractive environment to avoid prompts from apt-get
 ENV DEBIAN_FRONTEND=noninteractive
 
 
 
-ENV SLURM_VERSION=23.02.4 \
+# Set environment variables for building SLURM
+ENV SLURM_VERSION=23.11.6 \
   MUNGE_UID=981 \
   SLURM_UID=982 \
   WORKER_UID=1234\
   ANSIBLE_UID=1111
 
 
+
 COPY scripts/create_users_and_groups.sh /create_users_and_groups.sh
-RUN chmod +x /create_users_and_groups.sh
-RUN /create_users_and_groups.sh
-
 COPY scripts/install_system_tools.sh /install_system_tools.sh 
-RUN chmod +x /install_system_tools.sh 
-RUN /install_system_tools.sh
+RUN chmod +x /create_users_and_groups.sh /install_system_tools.sh && \
+    /create_users_and_groups.sh && \
+    /install_system_tools.sh
 
-
-# Download and install SLURM
-# Download, compile, and install SLURM
-RUN wget https://download.schedmd.com/slurm/slurm-23.02.4.tar.bz2 && \
-    tar xvjf slurm-23.02.4.tar.bz2 && \
-    rm slurm-23.02.4.tar.bz2 && \
-    cd slurm-23.02.4 && \
-    ./configure --prefix=/tmp/slurm-build --sysconfdir=/etc/slurm --enable-pam --with-pam_dir=/lib/x86_64-linux-gnu/security/ --without-shared-libslurm  --with-munge  && \
-    make && \
-    make contrib && \
-    make install
-
-WORKDIR /
-
-RUN fpm -s dir -t deb -v 1.0 -n slurm-23.02.4 --prefix=/usr -C /tmp/slurm-build . && dpkg -i slurm-23.02.4_1.0_amd64.deb
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+# Minimize the number of layers and clean up in the same RUN statement to reduce image size
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    wget \
+    bzip2 \
+    gcc \
+    make \
+    libpam0g-dev \
+    munge \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 
 
 
-#   22:         SSH
-# 3306:         MariaDB
-# 6817:         Slurm Ctl D
-# 6818:         Slurm D
-# 6819:         Slurm DBD
 
+# Download, unpack, compile, and install SLURM, then clean up in a single RUN to reduce image size
+RUN wget -qO- https://download.schedmd.com/slurm/slurm-${SLURM_VERSION}.tar.bz2 | tar xvj && \
+    cd slurm-${SLURM_VERSION} && \
+    ./configure --prefix=/usr --sysconfdir=/etc/slurm --enable-pam --with-pam_dir=/lib/x86_64-linux-gnu/security/ --without-shared-libslurm  --with-munge && \
+    make && make contrib && make install && \
+    cd / && rm -rf /slurm-${SLURM_VERSION}
+
+
+    # Copy scripts and make them executable in a single RUN statement to reduce layers
+
+
+# Expose necessary ports for SLURM and other services
 EXPOSE 22 3306 6817 6818 6819 8787
+
+# Define default command
+CMD ["bash"]
