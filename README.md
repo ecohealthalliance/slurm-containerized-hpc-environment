@@ -7,7 +7,7 @@
 The goal of this project is to outline the strategies for integrating Simple Linux Utility for Resource Management(SLURM) into our existing High-Performance Computing(HPC) platform.
  Steps
 
-## Contents
+## Contents and context
 
 1. [base](base) - Slurm base image from which other components are derived
 2. [controller +  database ](Controller) - Slurm controller (head-node) definition and database for accounting information)
