@@ -2,7 +2,7 @@
 set -e
 
 
-  cp /etc/munge/munge.key /.secret/munge.key
+  cp /etc/munge/munge.key /work/.secrets/munge.key 
   
 
  

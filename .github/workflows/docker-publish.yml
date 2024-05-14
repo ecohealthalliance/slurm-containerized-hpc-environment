@@ -6,17 +6,15 @@ on:
       - main
     paths:
       - 'Controller/Dockerfile.gpu'
-      - 'worker/Dockerfile.gpu'
+      - 'worker/Dockerfile.gpu' # Make sure this matches the case in your repo
       - 'base/Dockerfile'
-  workflow_dispatch:
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [base, Controller, worker]
-
+        node: [base, Controller, worker] # Ensure the case matches your directory names
     steps:
       - uses: actions/checkout@v2
       

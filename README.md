@@ -1,13 +1,13 @@
 # slurm-containerized-hpc-environment
 
 [![Docker](https://img.shields.io/badge/Container%20Registry-GHCR-blue)](https://ghcr.io/ecohealthalliance/slurm_reservoir)
-[![Build and Push Docker Images](https://github.com/ecohealthalliance/slurm-containerized-hpc-environment/actions/workflows/build_containers.yml/badge.svg)](https://github.com/ecohealthalliance/slurm-containerized-hpc-environment/actions/workflows/build_containers.yml)
+[![Build and Push Docker Images](https://github.com/ecohealthalliance/slurm-containerized-hpc-environment/actions/workflows/docker-publish.yml/badge.svg?branch=main)](https://github.com/ecohealthalliance/slurm-containerized-hpc-environment/actions/workflows/docker-publish.yml)
 
 
 The goal of this project is to outline the strategies for integrating Simple Linux Utility for Resource Management(SLURM) into our existing High-Performance Computing(HPC) platform.
  Steps
 
-## Contents
+## Contents and context
 
 1. [base](base) - Slurm base image from which other components are derived
 2. [controller +  database ](Controller) - Slurm controller (head-node) definition and database for accounting information)
@@ -740,3 +740,7 @@ OpenMPI: [https://www.open-mpi.org](https://www.open-mpi.org)
 Lmod: [http://lmod.readthedocs.io/en/latest/index.html](http://lmod.readthedocs.io/en/latest/index.html)
 
 - Lmod is a Lua based module system that easily handles the MODULEPATH Hierarchical problem. Environment Modules provide a convenient way to dynamically change the users’ environment through modulefiles. This includes easily adding or removing directories to the PATH environment variable. Modulefiles for Library packages provide environment variables that specify where the library and header files can be found.
+
+
+
+
