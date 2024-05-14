@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'controller/Dockerfile.gpu'
+      - 'Controller/Dockerfile.gpu'
       - 'worker/Dockerfile.gpu' # Make sure this matches the case in your repo
       - 'base/Dockerfile'
 
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: [base, controller, worker] # Ensure the case matches your directory names
+        node: [base, Controller, worker] # Ensure the case matches your directory names
     steps:
       - uses: actions/checkout@v2
       
